@@ -151,7 +151,7 @@ export default function CreateMomentBuilder() {
     const slug = safeRecipient.toLowerCase().replace(/[^a-z0-9]/g, "");
     const title =
       headline.trim() || `${occasion} for ${safeRecipient || "My Love"} ♡`;
-    const url = `dearly.love/for/${slug || "mylove"}`;
+    const url = `2usforever.com/for/${slug || "mylove"}`;
     const letter = safeMessage
       ? safeMessage + (safeSender ? `\n\n— ${safeSender}` : "")
       : `Dear ${safeRecipient || "my love"},\n\nYou came into my life and changed everything. Every moment with you feels like home.\n\nI just wanted you to know — you are seen, you are cherished, and you are deeply loved.\n\n${
@@ -266,7 +266,7 @@ export default function CreateMomentBuilder() {
       // If we have a moment url or similar, include it
       const safeRecipient = recipient?.trim() || "";
       const slug = safeRecipient.toLowerCase().replace(/[^a-z0-9]/g, "");
-      const momentUrl = `https://dearly.love/for/${slug || "mylove"}`;
+      const momentUrl = `https://2usforever.com/for/${slug || "mylove"}`;
       shareText = `I created something special for you: ${momentUrl}`;
     }
     const waUrl = `${baseUrl}?text=${encodeURIComponent(shareText)}`;
@@ -634,7 +634,7 @@ export default function CreateMomentBuilder() {
                     className="shrink-0 bg-[#B8435A] hover:bg-[#7A1A2A] text-white text-xs font-medium rounded-lg px-3.5 h-8 border-0"
                     onClick={() => {
                       navigator.clipboard?.writeText(
-                        `https://dearly.love/for/${recipient?.toLowerCase().replace(/[^a-z0-9]/g, "") || "mylove"}`,
+                        `https://2usforever.com/for/${recipient?.toLowerCase().replace(/[^a-z0-9]/g, "") || "mylove"}`,
                       );
                     }}
                   >

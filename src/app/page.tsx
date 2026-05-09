@@ -270,7 +270,7 @@ export default function Home() {
               everyone in this world, I found you. Happy 2 years, my love.&quot;
             </p>
             <button className="mockup-btn">Open your moment ✨</button>
-            <div className="mockup-url">dearly.love/for/jessica</div>
+            <div className="mockup-url">2usforever.com/for/jessica</div>
           </div>
         </div>
       </section>
@@ -409,7 +409,7 @@ export default function Home() {
             <p className="testi-quote">
               &quot;I used the proposal package and she literally screamed. I
               had the ring ready and the whole family was watching. Best moment
-              of my life — Dearly made it perfect.&quot;
+              of my life — 2UsForever made it perfect.&quot;
             </p>
             <div className="testi-author">
               <div className="testi-avatar">EO</div>

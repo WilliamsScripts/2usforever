@@ -103,7 +103,7 @@ export default function LandingFrame({
       <PetalsCanvas />
       <nav>
         <Link href="/" className="logo">
-          Dearly<span>.</span>
+          2UsForever<span>.</span>
         </Link>
         <ul className="nav-links">
           <li>
@@ -136,7 +136,7 @@ export default function LandingFrame({
                 fontFamily: "'Playfair Display',serif",
               }}
             >
-              Dearly<span style={{ color: "var(--rose)" }}>.</span>
+              2UsForever<span style={{ color: "var(--rose)" }}>.</span>
             </Link>
             <p>Making love unforgettable — one beautiful moment at a time.</p>
           </div>
@@ -163,7 +163,7 @@ export default function LandingFrame({
           </div>
         </div>
         <div className="footer-bottom">
-          <span>© 2025 Dearly. Made with love in Nigeria 🇳🇬</span>
+          <span>© 2025 2UsForever. Made with love in Nigeria 🇳🇬</span>
           <span>Instagram · TikTok · WhatsApp</span>
         </div>
       </footer>
