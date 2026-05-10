@@ -673,9 +673,13 @@ export default function CreateMomentBuilder() {
 
                     {/* Track info */}
                     <div className="grow">
-                      <p className="text-[13px] line-clamp-1 font-medium text-[#1A0810] truncate leading-tight">
+                      <p className="text-[13px] min-[376px]:block hidden line-clamp-1 font-medium text-[#1A0810] truncate leading-tight">
                         {track.name.slice(0, 33)}
                         {track.name.length > 33 ? "..." : ""}
+                      </p>
+                      <p className="text-[13px] line-clamp-1 max-[376px]:block hidden font-medium text-[#1A0810] truncate leading-tight">
+                        {track.name.slice(0, 22)}
+                        {track.name.length > 22 ? "..." : ""}
                       </p>
                       <p className="text-[11px] text-[#A88090] mt-0.5 truncate">
                         {track.artist}
