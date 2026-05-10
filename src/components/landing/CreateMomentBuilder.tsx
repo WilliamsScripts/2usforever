@@ -575,11 +575,11 @@ export default function CreateMomentBuilder() {
       {/* ShadCN Modal for Music Search */}
       <Dialog open={isMusicModalOpen} onOpenChange={setIsMusicModalOpen}>
         <DialogContent
-          className="p-0 max-w-md max-sm:w-screen max-sm:h-screen overflow-hidden border border-[rgba(184,67,90,0.18)] rounded-[20px] bg-[#FAF6F0] shadow-xl gap-0"
+          className="p-0 max-w-md max-sm:w-dvw max-sm:h-dvh overflow-hidden border border-[rgba(184,67,90,0.18)] rounded-[20px] bg-[#FAF6F0] shadow-xl gap-0"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="relative bg-[#7A1A2A] px-6 pt-6 pb-8">
+          <div className="relative bg-[#7A1A2A] h-40 px-6 pt-6 pb-8">
             <div className="flex items-start justify-between gap-3">
               {/* Icon */}
               <div className="w-10 h-10 rounded-full border border-[rgba(196,149,58,0.4)] bg-[rgba(196,149,58,0.1)] flex items-center justify-center text-lg shrink-0 mt-0.5">
@@ -601,7 +601,7 @@ export default function CreateMomentBuilder() {
           </div>
 
           {/* Body */}
-          <div className="px-6 pt-5 pb-5">
+          <div className="px-6 pt-5 grow pb-5">
             {/* Search row */}
             <div className="flex gap-2 items-center mb-4">
               <input
