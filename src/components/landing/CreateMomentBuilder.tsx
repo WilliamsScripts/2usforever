@@ -1,17 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import React, { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import CustomImagePicker from "../custom-image-picker";
 import { UploadResult } from "@/services/cloudinary.service";
-// Import Dialog components from shadcn/ui
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
   DialogFooter,
   DialogDescription,
@@ -19,7 +17,15 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Cormorant_Garamond, Playfair_Display } from "next/font/google";
+import {
+  ArrowBigLeft,
+  ArrowBigRight,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  Sparkles,
+} from "lucide-react";
+import { toast } from "sonner";
 
 const OCCASIONS = [
   "💌 Love Note",
@@ -28,6 +34,19 @@ const OCCASIONS = [
   "🎂 Birthday",
   "✈️ Surprise Drop",
   "🎊 Apology",
+  "🎄 Christmas",
+  "💝 Valentine's Day",
+  "🕌 Eid",
+  "🙏 Thanksgiving",
+  "🎓 Graduation",
+  "🏠 New Home",
+  "🤰 Baby on the Way",
+  "🎉 Congratulations",
+  "🌹 Mother's Day",
+  "🦸 Father's Day",
+  "💐 Get Well Soon",
+  "🛫 Farewell",
+  "👋 Welcome",
 ];
 
 const musicSchema = z.object({
@@ -142,6 +161,21 @@ export default function CreateMomentBuilder() {
     null,
   );
   const [successModalOpen, setSuccessModalOpen] = useState(false);
+  const [isGeneratingMessage, setIsGeneratingMessage] = useState(false);
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [showLeft, setShowLeft] = useState(false);
+  const [showRight, setShowRight] = useState(true);
+
+  const updateFades = () => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    setShowLeft(el.scrollLeft > 8);
+    setShowRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 8);
+  };
+
+  const nudge = (dir: 1 | -1) => {
+    scrollerRef.current?.scrollBy({ left: dir * 200, behavior: "smooth" });
+  };
 
   const preview = useMemo(() => {
     const safeRecipient = recipient?.trim() || "";
@@ -223,7 +257,9 @@ export default function CreateMomentBuilder() {
       const data = await response.json();
 
       if (!response.ok) {
-        setSaveError(data?.error || "Failed to save this moment");
+        const errorMessage = data?.error || "Failed to save this moment";
+        toast.error(errorMessage);
+        setSaveError(errorMessage);
         return;
       }
 
@@ -231,9 +267,12 @@ export default function CreateMomentBuilder() {
       setSuccessModalOpen(true);
       // Remove the builder-level preview success state.
       setShowPreview(false);
+      toast.success("Moment message has been saved successful ❤️");
       // console.log("Saved moment record:", data);
     } catch {
-      setSaveError("Could not save moment right now. Please try again.");
+      const mess = "Could not save moment right now. Please try again.";
+      toast.error(mess);
+      setSaveError(mess);
       return;
     } finally {
       setIsSavingMoment(false);
@@ -273,6 +312,37 @@ export default function CreateMomentBuilder() {
     return waUrl;
   };
 
+  const generateMessage = async () => {
+    setIsGeneratingMessage(true);
+    try {
+      const response = await fetch("/api/gemini/generate-message", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ occasion }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        const errorMessage = data?.error || "Failed to Generate message";
+        toast.error(errorMessage);
+        setSaveError(errorMessage);
+        return;
+      }
+      form.setValue("message", data.message);
+      toast.success("Generated love message");
+      return;
+    } catch (error) {
+      console.error("pizza error", error);
+      toast.error(String(error));
+      return;
+    } finally {
+      setIsGeneratingMessage(false);
+    }
+  };
+
   return (
     <section className="builder-section" id="create">
       <div className="builder-inner">
@@ -284,19 +354,66 @@ export default function CreateMomentBuilder() {
 
         <div className="form-row">
           <label>What&apos;s the occasion?</label>
-          <div className="occasion-pills">
-            {OCCASIONS.map((item) => (
-              <button
-                type="button"
-                key={item}
-                className={`pill ${occasion === item ? "active" : ""}`}
-                onClick={() =>
-                  form.setValue("occasion", item, { shouldValidate: true })
-                }
-              >
-                {item}
-              </button>
-            ))}
+          <div className="relative">
+            <div
+              className={`pointer-events-none absolute left-0 top-0 bottom-1 w-12 z-10 transition-opacity duration-200
+        bg-gradient-to-r from-[#FAF6F0] to-transparent rounded-l-2xl
+        ${showLeft ? "opacity-100" : "opacity-0"}`}
+            />
+            <button
+              type="button"
+              aria-label="Scroll left"
+              onClick={() => nudge(-1)}
+              className={`absolute left-[-10px] top-1/2 translate-y-[-60%] z-20
+        w-7 h-7 rounded-full bg-[#7A1A2A] border-[1.5px] border-[rgba(184,67,90,0.2)]
+        text-[#FAF6F0] text-sm flex items-center justify-center
+        hover:bg-[#FAF6F0] hover:text-[#7A1A2A] hover:border-[#7A1A2A] cursor-pointer
+        transition-all duration-150
+        ${showLeft ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+            >
+              <ChevronLeft />
+            </button>
+
+            {/* Scrollable track */}
+            <div
+              ref={scrollerRef}
+              onScroll={updateFades}
+              className="flex gap-2.5 overflow-x-auto scrollbar-hide pb-1 px-0.5 scroll-smooth"
+              style={{ scrollbarWidth: "none" }}
+            >
+              {OCCASIONS.map((item) => (
+                <button
+                  type="button"
+                  key={item}
+                  className={`pill shrink-0 ${occasion === item ? "active" : ""}`}
+                  onClick={() =>
+                    form.setValue("occasion", item, { shouldValidate: true })
+                  }
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+
+            {/* Right fade + arrow */}
+            <div
+              className={`pointer-events-none absolute right-0 top-0 bottom-1 w-12 z-10 transition-opacity duration-200
+    bg-gradient-to-l from-[#FAF6F0] to-transparent rounded-r-2xl
+    ${showRight ? "opacity-100" : "opacity-0"}`}
+            />
+            <button
+              type="button"
+              aria-label="Scroll right"
+              onClick={() => nudge(1)}
+              className={`absolute right-[-10px] top-1/2 translate-y-[-60%] z-20
+        w-7 h-7 rounded-full bg-[#7A1A2A] border-[1.5px] border-[rgba(184,67,90,0.2)]
+        text-[#FAF6F0] text-sm flex items-center justify-center
+        hover:bg-[#FAF6F0] hover:text-[#7A1A2A] hover:border-[#7A1A2A] cursor-pointer
+    transition-all duration-150
+    ${showRight ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+            >
+              <ChevronRight />
+            </button>
           </div>
         </div>
 
@@ -370,9 +487,25 @@ export default function CreateMomentBuilder() {
         </div>
 
         <div className="form-row">
-          <label>Your message (or we&apos;ll help you write it)</label>
+          <div className="flex flex-wrap items-center justify-between">
+            <label>Your message (or we&apos;ll help you write it)</label>
+            <button
+              type="button"
+              onClick={generateMessage}
+              disabled={isGeneratingMessage}
+              className="flex items-center ml-auto gap-1 cursor-pointer text-[#C8516A] bg-[#C8516A]/5 rounded-full px-2 border-[0.5px] border-[#C8516A] text-[13px] mb-1 p-1  font-medium tracking-tight"
+            >
+              {isGeneratingMessage ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Sparkles className="h-4 w-4" />
+              )}
+              Generate with AI
+            </button>
+          </div>
           <textarea
             {...form.register("message")}
+            disabled={isGeneratingMessage}
             placeholder="Write from the heart. Even a few words are enough to start…"
           />
         </div>
