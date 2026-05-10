@@ -649,7 +649,7 @@ export default function CreateMomentBuilder() {
                     key={track.id}
                     type="button"
                     onClick={() => selectTrack(track)}
-                    className={`flex items-center gap-3 rounded-xl px-3 py-2.5 border-[1.5px] text-left transition-all max-w-[340px]
+                    className={`flex items-center gap-3 rounded-xl px-3 py-2.5 border-[1.5px] text-left transition-all max-sm:max-w-[280px] max-w-[340px]
                 ${
                   isActive
                     ? "border-[#B8435A] bg-[rgba(184,67,90,0.04)]"
