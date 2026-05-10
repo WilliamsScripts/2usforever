@@ -291,24 +291,26 @@ export default function Home() {
 
         <div className="pricing-grid">
           <div className="price-card">
-            <div className="price-tier">Starter</div>
-            <div className="price-amount">₦3,000</div>
-            <div className="price-occasion">Love note · Birthday text</div>
+            <div className="price-tier">Human written message</div>
+            <div className="price-amount">₦3,500</div>
+            <div className="price-occasion">
+              Any occasion · Letter from the heart
+            </div>
             <ul className="price-list">
               <li>
                 <span className="check">✦</span> Beautiful letter page
               </li>
               <li>
-                <span className="check">✦</span> Petal animation
+                <span className="check">✦</span> Add your own message
               </li>
               <li>
-                <span className="check">✦</span> 1 photo upload
+                <span className="check">✦</span> Photo upload
               </li>
               <li>
-                <span className="check">✦</span> Private shareable link
+                <span className="check">✦</span> Shareable private link
               </li>
               <li>
-                <span className="check">✦</span> Active for 30 days
+                <span className="check">✦</span> Page stays live
               </li>
             </ul>
             <a href="/create-moment" className="btn-card">
@@ -317,60 +319,30 @@ export default function Home() {
           </div>
 
           <div className="price-card featured">
-            <div className="price-best">Most popular</div>
-            <div className="price-tier">Premium</div>
-            <div className="price-amount">₦10,000</div>
-            <div className="price-occasion">Anniversary · Surprise drop</div>
+            <div className="price-best">With AI message</div>
+            <div className="price-tier">AI-generated letter</div>
+            <div className="price-amount">₦5,000</div>
+            <div className="price-occasion">
+              Let AI help express your feelings
+            </div>
             <ul className="price-list">
               <li>
-                <span className="check">✦</span> Animated premium page
+                <span className="check">✦</span> Everything in Human written
               </li>
               <li>
-                <span className="check">✦</span> AI love letter assist
+                <span className="check">✦</span> AI generates a personal message
               </li>
               <li>
-                <span className="check">✦</span> Up to 10 photos
+                <span className="check">✦</span> AI letter preview
               </li>
               <li>
-                <span className="check">✦</span> Memory timeline
+                <span className="check">✦</span> Edit the AI message if you like
               </li>
               <li>
-                <span className="check">✦</span> Music embed
-              </li>
-              <li>
-                <span className="check">✦</span> Active for 1 year
+                <span className="check">✦</span> Page stays live
               </li>
             </ul>
             <a href="/create-moment" className="btn-card-white">
-              Get started →
-            </a>
-          </div>
-
-          <div className="price-card">
-            <div className="price-tier">Proposal</div>
-            <div className="price-amount">₦25,000</div>
-            <div className="price-occasion">The big question</div>
-            <ul className="price-list">
-              <li>
-                <span className="check">✦</span> Full cinematic reveal
-              </li>
-              <li>
-                <span className="check">✦</span> Ring animation
-              </li>
-              <li>
-                <span className="check">✦</span> Unlimited photos
-              </li>
-              <li>
-                <span className="check">✦</span> Custom domain add-on
-              </li>
-              <li>
-                <span className="check">✦</span> Video upload support
-              </li>
-              <li>
-                <span className="check">✦</span> Lifetime page hosting
-              </li>
-            </ul>
-            <a href="/create-moment" className="btn-card">
               Get started →
             </a>
           </div>
