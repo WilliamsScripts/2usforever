@@ -601,9 +601,9 @@ export default function CreateMomentBuilder() {
           </div>
 
           {/* Body */}
-          <div className="px-6 pt-5 grow pb-5">
+          <div className="pt-5 grow pb-5">
             {/* Search row */}
-            <div className="flex gap-2 items-center mb-4">
+            <div className="flex gap-2 px-5 items-center mb-4">
               <input
                 type="text"
                 value={musicQuery}
@@ -626,22 +626,22 @@ export default function CreateMomentBuilder() {
 
             {/* Result count / error */}
             {musicError ? (
-              <p className="text-[12px] text-[#B8435A] mb-3 font-light">
+              <p className="text-[12px]  px-5 text-[#B8435A] mb-3 font-light">
                 {musicError}
               </p>
             ) : musicResults.length > 0 ? (
-              <p className="text-[11px] text-[#A88090] mb-3 font-light">
+              <p className="text-[11px]  px-5 text-[#A88090] mb-3 font-light">
                 {musicResults.length} result
                 {musicResults.length !== 1 ? "s" : ""}
               </p>
             ) : !isSearchingMusic ? (
-              <p className="text-[11px] text-[#A88090] mb-3 font-light">
+              <p className="text-[11px]  px-5 text-[#A88090] mb-3 font-light">
                 Search for a song to see results
               </p>
             ) : null}
 
             {/* Track list */}
-            <div className="flex flex-col gap-2 mb-4 max-h-[280px] overflow-y-auto w-full">
+            <div className="flex px-5 flex-col gap-2 mb-4 h-full max-h-[280px] overflow-y-auto w-full">
               {musicResults.map((track) => {
                 const isActive = selectedMusic?.track_id === track.trackId;
                 return (
@@ -649,7 +649,7 @@ export default function CreateMomentBuilder() {
                     key={track.id}
                     type="button"
                     onClick={() => selectTrack(track)}
-                    className={`flex items-center gap-3 rounded-xl px-3 py-2.5 border-[1.5px] text-left transition-all max-sm:max-w-[280px] max-w-[340px]
+                    className={`flex items-center gap-3 justify-between rounded-xl px-3 py-2.5 border-[1.5px] text-left transition-all w-full
                 ${
                   isActive
                     ? "border-[#B8435A] bg-[rgba(184,67,90,0.04)]"
@@ -672,9 +672,10 @@ export default function CreateMomentBuilder() {
                     )}
 
                     {/* Track info */}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-medium text-[#1A0810] truncate leading-tight">
-                        {track.name}
+                    <div className="grow">
+                      <p className="text-[13px] line-clamp-1 font-medium text-[#1A0810] truncate leading-tight">
+                        {track.name.slice(0, 33)}
+                        {track.name.length > 33 ? "..." : ""}
                       </p>
                       <p className="text-[11px] text-[#A88090] mt-0.5 truncate">
                         {track.artist}
@@ -683,7 +684,7 @@ export default function CreateMomentBuilder() {
 
                     {/* Check */}
                     <div
-                      className={`w-[22px] h-[22px] rounded-full border-[1.5px] flex items-center justify-center text-[11px] shrink-0 transition-all
+                      className={`w-[22px] h-[22px] ml-auto rounded-full border-[1.5px] flex items-center justify-center text-[11px] shrink-0 transition-all
                 ${
                   isActive
                     ? "bg-[#B8435A] border-[#B8435A] text-white"
