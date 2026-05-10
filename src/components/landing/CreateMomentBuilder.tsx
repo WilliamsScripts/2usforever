@@ -442,7 +442,7 @@ export default function CreateMomentBuilder() {
       {/* ShadCN Modal for Music Search */}
       <Dialog open={isMusicModalOpen} onOpenChange={setIsMusicModalOpen}>
         <DialogContent
-          className="p-0 max-w-md overflow-hidden border border-[rgba(184,67,90,0.18)] rounded-[20px] bg-[#FAF6F0] shadow-xl gap-0"
+          className="p-0 max-w-md max-sm:w-screen max-sm:h-screen overflow-hidden border border-[rgba(184,67,90,0.18)] rounded-[20px] bg-[#FAF6F0] shadow-xl gap-0"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
