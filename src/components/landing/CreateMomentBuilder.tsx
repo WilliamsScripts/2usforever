@@ -703,7 +703,7 @@ export default function CreateMomentBuilder() {
             </div>
 
             {/* Footer */}
-            <div className="border-t border-[rgba(184,67,90,0.1)] pt-4 flex justify-end">
+            <div className="border-t border-[rgba(184,67,90,0.1)] pt-4 px-5 flex justify-end">
               <DialogClose asChild>
                 <Button
                   type="button"
