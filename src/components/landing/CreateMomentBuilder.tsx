@@ -681,8 +681,13 @@ export default function CreateMomentBuilder() {
                         {track.name.slice(0, 22)}
                         {track.name.length > 22 ? "..." : ""}
                       </p>
-                      <p className="text-[11px] text-[#A88090] mt-0.5 truncate">
-                        {track.artist}
+                      <p className="text-[11px] min-[376px]:block hidden text-[#A88090] mt-0.5 truncate">
+                        {track.artist.slice(0, 33)}
+                        {track.artist.length > 33 ? "..." : ""}
+                      </p>
+                      <p className="text-[11px] max-[376px]:block hidden text-[#A88090] mt-0.5 truncate">
+                        {track.artist.slice(0, 22)}
+                        {track.artist.length > 22 ? "..." : ""}
                       </p>
                     </div>
 
