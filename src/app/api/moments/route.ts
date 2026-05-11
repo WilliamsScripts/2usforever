@@ -112,3 +112,42 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export async function GET(request: NextRequest) {
+  try {
+    const id = request.nextUrl.searchParams.get("id");
+    if (!id) {
+      return NextResponse.json(
+        {
+          error: "Moment ID is required in the query",
+        },
+        { status: 400 },
+      );
+    }
+
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase
+      .from("moments")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error) {
+      console.error("error", error);
+      return NextResponse.json(
+        { error: "Failed to create moment record", details: error.message },
+        { status: 500 },
+      );
+    }
+
+    return NextResponse.json({ data }, { status: 201 });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error ? error.message : "Unexpected server error",
+      },
+      { status: 500 },
+    );
+  }
+}
