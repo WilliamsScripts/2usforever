@@ -1,32 +1,8 @@
 "use client";
 
-import { useState, useSyncExternalStore, useEffect, useRef } from "react";
+import { useState, useSyncExternalStore } from "react";
 import Image from "next/image";
-
-interface FloatingHeart {
-  id: number;
-  left: number;
-  duration: number;
-  delay: number;
-  size: number;
-  char: string;
-  color: string;
-}
-
-interface MomentData {
-  occasion?: string;
-  headline?: string;
-  message: string;
-  sender?: string;
-  recipient?: string;
-  photos?: string[];
-  music?: {
-    track_id?: string;
-    name?: string;
-    artist_name?: string;
-    album_image?: string;
-  };
-}
+import { MomentData } from "../types";
 
 const CHARS = ["♡", "♥", "♡", "♥", "♡"];
 const COLORS = [
@@ -38,7 +14,7 @@ const COLORS = [
   "#f08090",
 ];
 
-const HEARTS: FloatingHeart[] = Array.from({ length: 24 }, (_, i) => ({
+const HEARTS = Array.from({ length: 24 }, (_, i) => ({
   id: i,
   left: Math.round(((i * 4.3 + Math.sin(i * 1.7) * 14) % 100) * 100) / 100,
   duration: 7 + (i % 8) * 1.3,
@@ -48,8 +24,7 @@ const HEARTS: FloatingHeart[] = Array.from({ length: 24 }, (_, i) => ({
   color: COLORS[i % COLORS.length],
 }));
 
-// Deterministic per-photo tilts so server and client match
-const PHOTO_TILTS = [-2.5, 1.8, -1.2, 2.1, -0.8];
+const TILTS = [-2.5, 1.8, -1.2, 2.1, -0.8];
 
 function useIsClient() {
   return useSyncExternalStore(
@@ -59,58 +34,141 @@ function useIsClient() {
   );
 }
 
-export default function MomentDisplay({ data }: { data: MomentData }) {
+function PhotoGrid({ photos }: { photos: string[] }) {
+  if (photos.length === 0) return null;
+
+  const imgBox: React.CSSProperties = {
+    background: "rgba(255,240,245,0.05)",
+    border: "1px solid rgba(200,81,106,0.25)",
+    boxShadow: "0 8px 32px rgba(0,0,0,0.5), 0 0 20px rgba(200,81,106,0.1)",
+  };
+  const tilt = (i: number) => ({
+    transform: `rotate(${TILTS[i % TILTS.length]}deg)`,
+  });
+
+  if (photos.length === 1) {
+    return (
+      <div className="flex justify-center">
+        <div className="relative w-[220px]" style={tilt(0)}>
+          <div
+            className="overflow-hidden rounded-lg"
+            style={{ aspectRatio: "3/4", ...imgBox }}
+          >
+            <Image
+              loading="eager"
+              src={photos[0]}
+              alt="Photo 1"
+              fill
+              className="object-cover"
+              sizes="220px"
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (photos.length <= 3) {
+    return (
+      <div className="flex gap-3 justify-center items-end">
+        {photos.map((url, i) => (
+          <div key={i} className="relative flex-1 min-w-0" style={tilt(i)}>
+            <div
+              className="overflow-hidden rounded-lg"
+              style={{ aspectRatio: "3/4", ...imgBox }}
+            >
+              <Image
+                src={url}
+                loading="eager"
+                alt={`Photo ${i + 1}`}
+                fill
+                className="object-cover"
+                sizes="(max-width: 640px) 33vw, 160px"
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (photos.length === 4) {
+    return (
+      <div className="grid grid-cols-2 gap-3">
+        {photos.map((url, i) => (
+          <div key={i} className="relative" style={tilt(i)}>
+            <div
+              className="overflow-hidden rounded-lg"
+              style={{ aspectRatio: "4/3", ...imgBox }}
+            >
+              <Image
+                src={url}
+                loading="eager"
+                alt={`Photo ${i + 1}`}
+                fill
+                className="object-cover"
+                sizes="(max-width: 640px) 45vw, 200px"
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // 5 photos: 3 top + 2 bottom
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-3 gap-2">
+        {photos.slice(0, 3).map((url, i) => (
+          <div key={i} className="relative" style={tilt(i)}>
+            <div
+              className="overflow-hidden rounded-lg"
+              style={{ aspectRatio: "2/3", ...imgBox }}
+            >
+              <Image
+                src={url}
+                alt={`Photo ${i + 1}`}
+                loading="eager"
+                fill
+                className="object-cover"
+                sizes="(max-width: 640px) 30vw, 140px"
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="grid grid-cols-2 gap-2 px-10">
+        {photos.slice(3).map((url, i) => (
+          <div key={i + 3} className="relative" style={tilt(i + 3)}>
+            <div
+              className="overflow-hidden rounded-lg"
+              style={{ aspectRatio: "4/3", ...imgBox }}
+            >
+              <Image
+                src={url}
+                alt={`Photo ${i + 4}`}
+                loading="eager"
+                fill
+                className="object-cover"
+                sizes="(max-width: 640px) 40vw, 180px"
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function ClassicTemplate({ data }: { data: MomentData }) {
   const isClient = useIsClient();
   const [dismissed, setDismissed] = useState(false);
   const [autoplay, setAutoplay] = useState(false);
-  const controllerRef = useRef<{ togglePlay: () => void; addListener: (e: string, cb: () => void) => void; destroy?: () => void } | null>(null);
-
   const hasMusic = !!data.music?.track_id;
   const showModal = isClient && hasMusic && !dismissed;
   const showPlayer = dismissed && hasMusic;
   const photos = data.photos ?? [];
-
-  useEffect(() => {
-    if (!showPlayer || !data.music?.track_id) return;
-
-    const uri = `spotify:track:${data.music.track_id}`;
-    type SpotifyAPI = { createController: (el: HTMLElement, opts: object, cb: (c: typeof controllerRef.current) => void) => void };
-    const win = window as typeof window & { SpotifyIframeApi?: SpotifyAPI; onSpotifyIframeApiReady?: (api: SpotifyAPI) => void };
-
-    function init(api: SpotifyAPI) {
-      const el = document.getElementById("spotify-embed-iframe");
-      if (!el) return;
-      api.createController(el, { uri, width: "100%", height: 80 }, (controller) => {
-        controllerRef.current = controller;
-        controller?.addListener("ready", () => {
-          if (autoplay) controller?.togglePlay();
-        });
-      });
-    }
-
-    if (win.SpotifyIframeApi) {
-      init(win.SpotifyIframeApi);
-    } else {
-      const prev = win.onSpotifyIframeApiReady;
-      win.onSpotifyIframeApiReady = (api) => {
-        win.SpotifyIframeApi = api;
-        prev?.(api);
-        init(api);
-      };
-      if (!document.getElementById("spotify-iframe-api-script")) {
-        const s = document.createElement("script");
-        s.id = "spotify-iframe-api-script";
-        s.src = "https://open.spotify.com/embed/iframe-api/v1";
-        s.async = true;
-        document.body.appendChild(s);
-      }
-    }
-
-    return () => {
-      controllerRef.current?.destroy?.();
-      controllerRef.current = null;
-    };
-  }, [showPlayer, data.music?.track_id, autoplay]);
 
   return (
     <div
@@ -165,11 +223,11 @@ export default function MomentDisplay({ data }: { data: MomentData }) {
               animation: "fadeUp 0.6s ease both",
             }}
           >
-            {/* Album art */}
             {data.music.album_image && (
               <div className="relative">
                 <Image
                   src={data.music.album_image}
+                  loading="eager"
                   alt={data.music.name || "Album"}
                   width={110}
                   height={110}
@@ -179,7 +237,6 @@ export default function MomentDisplay({ data }: { data: MomentData }) {
                       "0 0 40px rgba(200,81,106,0.5), 0 8px 32px rgba(0,0,0,0.6)",
                   }}
                 />
-                {/* Vinyl ring shimmer */}
                 <div
                   className="absolute inset-0 rounded-2xl pointer-events-none"
                   style={{
@@ -235,12 +292,8 @@ export default function MomentDisplay({ data }: { data: MomentData }) {
       {/* Page content */}
       <div
         className="relative z-10 max-w-xl mx-auto px-6 py-16 flex flex-col items-center min-h-screen justify-center"
-        style={{
-          opacity: isClient ? 1 : 0,
-          transition: "opacity 1.6s ease",
-        }}
+        style={{ opacity: isClient ? 1 : 0, transition: "opacity 1.6s ease" }}
       >
-        {/* Eyebrow */}
         <p
           className="text-rose-300/50 text-xs tracking-[0.45em] uppercase mb-4"
           style={{ animation: "fadeUp 1s ease 0.3s both" }}
@@ -248,7 +301,6 @@ export default function MomentDisplay({ data }: { data: MomentData }) {
           with love
         </p>
 
-        {/* Occasion title */}
         <h1
           className="text-5xl text-center text-rose-100 font-light mb-2"
           style={{
@@ -261,7 +313,6 @@ export default function MomentDisplay({ data }: { data: MomentData }) {
           {data.occasion || "A Love Letter"}
         </h1>
 
-        {/* Decorative divider */}
         <div
           className="flex items-center gap-3 my-7"
           style={{ animation: "fadeUp 1s ease 0.7s both" }}
@@ -287,7 +338,6 @@ export default function MomentDisplay({ data }: { data: MomentData }) {
           />
         </div>
 
-        {/* Headline */}
         {data.headline && (
           <h2
             className="text-rose-200/70 text-xl text-center mb-8 font-light italic"
@@ -300,52 +350,15 @@ export default function MomentDisplay({ data }: { data: MomentData }) {
           </h2>
         )}
 
-        {/* Photo gallery */}
         {photos.length > 0 && (
           <div
             className="w-full mb-8"
             style={{ animation: "fadeUp 1s ease 1s both" }}
           >
-            <div
-              className={`flex gap-3 justify-center ${
-                photos.length === 1 ? "" : "items-end"
-              }`}
-            >
-              {photos.map((url, i) => (
-                <div
-                  key={i}
-                  className="relative flex-1 min-w-0"
-                  style={{
-                    transform: `rotate(${PHOTO_TILTS[i % PHOTO_TILTS.length]}deg)`,
-                    maxWidth: photos.length === 1 ? "280px" : "none",
-                    margin: photos.length === 1 ? "0 auto" : undefined,
-                  }}
-                >
-                  <div
-                    className="overflow-hidden rounded-lg"
-                    style={{
-                      aspectRatio: "3/4",
-                      background: "rgba(255,240,245,0.05)",
-                      border: "1px solid rgba(200,81,106,0.25)",
-                      boxShadow:
-                        "0 8px 32px rgba(0,0,0,0.5), 0 0 20px rgba(200,81,106,0.1)",
-                    }}
-                  >
-                    <Image
-                      src={url}
-                      alt={`Photo ${i + 1}`}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 640px) 33vw, 180px"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
+            <PhotoGrid photos={photos} />
           </div>
         )}
 
-        {/* Message card */}
         <div
           className="w-full rounded-2xl p-8 mb-8 relative overflow-hidden"
           style={{
@@ -403,8 +416,7 @@ export default function MomentDisplay({ data }: { data: MomentData }) {
           )}
         </div>
 
-        {/* Music player — only mounts after user interaction so autoplay works */}
-        {showPlayer && data.music?.track_id && (
+        {showPlayer && (
           <div
             className="w-full flex flex-col items-center gap-4"
             style={{ animation: "fadeUp 0.8s ease both" }}
@@ -428,38 +440,20 @@ export default function MomentDisplay({ data }: { data: MomentData }) {
                 }}
               />
             </div>
-
-            <div
-              id="spotify-embed-iframe"
+            <iframe
+              src={`https://open.spotify.com/embed/track/${data.music?.track_id}?utm_source=generator${autoplay ? "&autoplay=1" : ""}`}
+              width="100%"
+              height="152"
+              allowFullScreen
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+              loading="eager"
               style={{
-                borderRadius: "14px",
-                overflow: "hidden",
+                border: "none",
+                borderRadius: "12px",
                 boxShadow: "0 0 40px rgba(200, 81, 106, 0.18)",
-                width: "100%",
-                minHeight: "80px",
               }}
+              title={data.music?.name || "Song for you"}
             />
-
-            {/* {data.music.album_image && (
-              <div className="flex items-center gap-3 mt-1">
-                <Image
-                  src={data.music.album_image}
-                  alt={data.music.name || "Album cover"}
-                  width={48}
-                  height={48}
-                  className="rounded-lg"
-                  style={{ boxShadow: "0 0 20px rgba(200, 81, 106, 0.4)" }}
-                />
-                <div>
-                  <p className="text-rose-100 text-sm font-medium">
-                    {data.music.name}
-                  </p>
-                  <p className="text-rose-300/60 text-xs">
-                    by {data.music.artist_name}
-                  </p>
-                </div>
-              </div>
-            )} */}
           </div>
         )}
 
@@ -473,23 +467,15 @@ export default function MomentDisplay({ data }: { data: MomentData }) {
 
       <style>{`
         @keyframes floatHeart {
-          0% {
-            transform: translateY(0) scale(0.85) rotate(-8deg);
-            opacity: 0;
-          }
+          0% { transform: translateY(0) scale(0.85) rotate(-8deg); opacity: 0; }
           8% { opacity: 0.65; }
           75% { opacity: 0.35; }
-          100% {
-            transform: translateY(-115vh) scale(1.15) rotate(12deg);
-            opacity: 0;
-          }
+          100% { transform: translateY(-115vh) scale(1.15) rotate(12deg); opacity: 0; }
         }
-
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(22px); }
           to   { opacity: 1; transform: translateY(0); }
         }
-
         @keyframes pulseGlow {
           0%, 100% {
             box-shadow: 0 0 25px rgba(200,81,106,0.07), inset 0 0 25px rgba(200,81,106,0.02);

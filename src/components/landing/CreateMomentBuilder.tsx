@@ -75,7 +75,7 @@ const createMomentSchema = z.object({
   recipient: z.string().trim().min(1, "Their name is required"),
   message: z.string().trim().max(2000).optional(),
   sender: z.string().trim().max(120).optional(),
-  photos: z.array(z.string().url()).max(8).optional(),
+  photos: z.array(z.string().url()).max(5).optional(),
   music: musicSchema.optional(),
   template: z.string().min(1, "Please select a template"),
   sender_email: z
@@ -586,7 +586,7 @@ export default function CreateMomentBuilder() {
                   folder="2usforever"
                 />
               </div>
-              <p className="builder-helper">{photos.length} / 8 uploaded</p>
+              <p className="builder-helper">{photos.length} / 5 uploaded</p>
             </div>
           </div>
         )}
