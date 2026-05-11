@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useCallback } from "react";
 
 type Controller = {
   togglePlay: () => void;
@@ -22,15 +22,14 @@ type Win = typeof window & {
 export function useSpotifyEmbed({
   elementId,
   trackId,
-  autoplay,
   active,
 }: {
   elementId: string;
   trackId: string | undefined;
-  autoplay: boolean;
   active: boolean;
 }) {
-  const ref = useRef<Controller | null>(null);
+  const controllerRef = useRef<Controller | null>(null);
+  const pendingPlay = useRef(false);
 
   useEffect(() => {
     if (!active || !trackId) return;
@@ -42,9 +41,12 @@ export function useSpotifyEmbed({
       const el = document.getElementById(elementId);
       if (!el) return;
       api.createController(el, { uri, width: "100%", height: 80 }, (c) => {
-        ref.current = c;
+        controllerRef.current = c;
         c?.addListener("ready", () => {
-          if (autoplay) c?.togglePlay();
+          if (pendingPlay.current) {
+            c?.togglePlay();
+            pendingPlay.current = false;
+          }
         });
       });
     }
@@ -68,10 +70,21 @@ export function useSpotifyEmbed({
     }
 
     return () => {
-      ref.current?.destroy?.();
-      ref.current = null;
+      controllerRef.current?.destroy?.();
+      controllerRef.current = null;
+      pendingPlay.current = false;
     };
-  }, [active, trackId, autoplay, elementId]);
+  }, [active, trackId, elementId]);
 
-  return ref;
+  // Call this directly inside a user gesture handler (click/tap) so iOS allows playback.
+  // If the controller isn't ready yet, pendingPlay ensures it starts once it is.
+  const play = useCallback(() => {
+    if (controllerRef.current) {
+      controllerRef.current.togglePlay();
+    } else {
+      pendingPlay.current = true;
+    }
+  }, []);
+
+  return play;
 }
