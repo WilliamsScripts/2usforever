@@ -527,7 +527,7 @@ export default function CreateMomentBuilder() {
           <label>Music</label>
           <Button
             type="button"
-            className="music-select-btn"
+            className="music-select-btn truncate whitespace-nowrap max-sm:text-left px-3"
             onClick={() => setIsMusicModalOpen(true)}
             variant="outline"
           >
@@ -552,7 +552,7 @@ export default function CreateMomentBuilder() {
           onClick={handlePreview}
           disabled={isSavingMoment}
         >
-          {isSavingMoment ? "Saving..." : "Save & preview my moment →"}
+          {isSavingMoment ? "Saving..." : "Save"}
         </Button>
         {saveError ? <p className="field-error">{saveError}</p> : null}
         {/* No more builder-level success note. Modal is now used. */}
