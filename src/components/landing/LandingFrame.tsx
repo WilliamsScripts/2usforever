@@ -141,14 +141,6 @@ export default function LandingFrame({
             <p>Making love unforgettable — one beautiful moment at a time.</p>
           </div>
           <div className="footer-col">
-            <h5>Occasions</h5>
-            <Link href="/#occasions">Proposals</Link>
-            <Link href="/#occasions">Anniversaries</Link>
-            <Link href="/#occasions">Birthdays</Link>
-            <Link href="/#occasions">Love Notes</Link>
-            <Link href="/#occasions">Apology Pages</Link>
-          </div>
-          <div className="footer-col">
             <h5>Company</h5>
             <a href="#">About us</a>
             <Link href="/#how">How it works</Link>
@@ -163,8 +155,7 @@ export default function LandingFrame({
           </div>
         </div>
         <div className="footer-bottom">
-          <span>© 2025 2UsForever. Made with love in Nigeria 🇳🇬</span>
-          <span>Instagram · TikTok · WhatsApp</span>
+          <span>© 2025 2UsForever.</span>
         </div>
       </footer>
     </>
