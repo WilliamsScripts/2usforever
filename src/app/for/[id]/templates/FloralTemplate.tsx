@@ -66,7 +66,7 @@ function PolaroidGrid({ photos }: { photos: string[] }) {
               alt="Photo 1"
               loading="eager"
               fill
-              className="object-cover"
+              className="object-contain"
               sizes="190px"
             />
           </div>
@@ -89,7 +89,7 @@ function PolaroidGrid({ photos }: { photos: string[] }) {
                 alt={`Photo ${i + 1}`}
                 fill
                 loading="eager"
-                className="object-cover"
+                className="object-contain"
                 sizes="(max-width: 640px) 30vw, 140px"
               />
             </div>
@@ -112,7 +112,7 @@ function PolaroidGrid({ photos }: { photos: string[] }) {
               src={url}
               alt={`Photo ${i + 1}`}
               fill
-              className="object-cover"
+              className="object-contain"
               sizes="(max-width: 640px) 43vw, 180px"
             />
           </div>

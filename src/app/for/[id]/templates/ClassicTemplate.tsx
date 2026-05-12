@@ -59,7 +59,7 @@ function PhotoGrid({ photos }: { photos: string[] }) {
               src={photos[0]}
               alt="Photo 1"
               fill
-              className="object-cover"
+              className="object-contain"
               sizes="220px"
             />
           </div>
@@ -82,7 +82,7 @@ function PhotoGrid({ photos }: { photos: string[] }) {
                 loading="eager"
                 alt={`Photo ${i + 1}`}
                 fill
-                className="object-cover"
+                className="object-contain"
                 sizes="(max-width: 640px) 33vw, 160px"
               />
             </div>
@@ -106,7 +106,7 @@ function PhotoGrid({ photos }: { photos: string[] }) {
                 loading="eager"
                 alt={`Photo ${i + 1}`}
                 fill
-                className="object-cover"
+                className="object-contain"
                 sizes="(max-width: 640px) 45vw, 200px"
               />
             </div>
@@ -131,7 +131,7 @@ function PhotoGrid({ photos }: { photos: string[] }) {
                 alt={`Photo ${i + 1}`}
                 loading="eager"
                 fill
-                className="object-cover"
+                className="object-contain"
                 sizes="(max-width: 640px) 30vw, 140px"
               />
             </div>
@@ -150,7 +150,7 @@ function PhotoGrid({ photos }: { photos: string[] }) {
                 alt={`Photo ${i + 4}`}
                 loading="eager"
                 fill
-                className="object-cover"
+                className="object-contain"
                 sizes="(max-width: 640px) 40vw, 180px"
               />
             </div>

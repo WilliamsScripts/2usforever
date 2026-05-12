@@ -308,16 +308,14 @@ export default function CreateMomentBuilder() {
   };
 
   const getWhatsappLink = () => {
-    if (!recipient_phone || !/^\d{11}$/.test(recipient_phone)) return "";
+    if (!recipient_phone || !/^\d{11}$/.test(recipient_phone) || !savedMoment)
+      return "";
     const phone = "234" + recipient_phone.slice(1);
     const baseUrl = "https://wa.me/" + phone;
     let shareText = `I created something special for you`;
-    if (savedMoment) {
-      const safeRecipient = recipient?.trim() || "";
-      const slug = safeRecipient.toLowerCase().replace(/[^a-z0-9]/g, "");
-      const momentUrl = `https://2usforever.com/for/${slug || "mylove"}`;
-      shareText = `I created something special for you: ${momentUrl}`;
-    }
+
+    const momentUrl = `https://2usforever.vercel.app/for/${savedMoment.id}`;
+    shareText = `I created something special for you: ${momentUrl}`;
     return `${baseUrl}?text=${encodeURIComponent(shareText)}`;
   };
 
@@ -977,25 +975,19 @@ export default function CreateMomentBuilder() {
 
                 <div className="flex items-center gap-2.5 bg-white border border-[rgba(184,67,90,0.15)] rounded-xl px-3.5 py-3 mb-3">
                   <Link
-                    href={
-                      recipient
-                        ? `https://2usforever.com/for/${recipient.toLowerCase().replace(/[^a-z0-9]/g, "") || "mylove"}`
-                        : "https://2usforever.com/"
-                    }
+                    href={`https://2usforever.vercel.app/for/${savedMoment.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-[13px] text-[#B8435A] break-all leading-snug flex-1 hover:underline"
                   >
-                    {recipient
-                      ? `2usforever.com/for/${recipient.toLowerCase().replace(/[^a-z0-9]/g, "") || "mylove"}`
-                      : "2usforever.com/"}
+                    https://2usforever.vercel.app/for/{savedMoment.id}
                   </Link>
                   <Button
                     size="sm"
                     className="shrink-0 bg-[#B8435A] hover:bg-[#7A1A2A] text-white text-xs font-medium rounded-lg px-3.5 h-8 border-0"
                     onClick={() => {
                       navigator.clipboard?.writeText(
-                        `https://2usforever.com/for/${recipient?.toLowerCase().replace(/[^a-z0-9]/g, "") || "mylove"}`,
+                        `https://2usforever.vercel.app/for/${savedMoment.id}`,
                       );
                     }}
                   >

@@ -36,21 +36,41 @@ function useIsClient() {
 function PhotoStrip({ photos }: { photos: string[] }) {
   if (photos.length === 0) return null;
 
-  const glow = "0 20px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(100,130,255,0.18), 0 0 40px rgba(80,100,220,0.1)";
+  const glow =
+    "0 20px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(100,130,255,0.18), 0 0 40px rgba(80,100,220,0.1)";
 
   if (photos.length === 1) {
     return (
-      <div className="flex justify-center" style={{ animation: "fadeSlideUp 1s ease 0.55s both" }}>
+      <div
+        className="flex justify-center"
+        style={{ animation: "fadeSlideUp 1s ease 0.55s both" }}
+      >
         <div
           className="relative overflow-hidden"
-          style={{ width: "240px", aspectRatio: "3/4", borderRadius: "20px", boxShadow: glow }}
+          style={{
+            width: "240px",
+            aspectRatio: "3/4",
+            borderRadius: "20px",
+            boxShadow: glow,
+          }}
         >
-          <Image src={photos[0]} alt="Photo 1" fill loading="eager" className="object-cover" sizes="240px" />
-          <div style={{
-            position: "absolute", inset: 0,
-            background: "linear-gradient(to bottom, transparent 60%, rgba(3,8,18,0.4) 100%)",
-            borderRadius: "inherit",
-          }} />
+          <Image
+            src={photos[0]}
+            alt="Photo 1"
+            fill
+            loading="eager"
+            className="object-contain"
+            sizes="240px"
+          />
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background:
+                "linear-gradient(to bottom, transparent 60%, rgba(3,8,18,0.4) 100%)",
+              borderRadius: "inherit",
+            }}
+          />
         </div>
       </div>
     );
@@ -58,15 +78,37 @@ function PhotoStrip({ photos }: { photos: string[] }) {
 
   if (photos.length === 2) {
     return (
-      <div className="flex gap-3" style={{ animation: "fadeSlideUp 1s ease 0.55s both" }}>
+      <div
+        className="flex gap-3"
+        style={{ animation: "fadeSlideUp 1s ease 0.55s both" }}
+      >
         {photos.map((url, i) => (
-          <div key={i} className="relative flex-1 overflow-hidden" style={{ aspectRatio: "3/4", borderRadius: "16px", boxShadow: glow }}>
-            <Image src={url} alt={`Photo ${i + 1}`} fill loading="eager" className="object-cover" sizes="(max-width: 640px) 45vw, 200px" />
-            <div style={{
-              position: "absolute", inset: 0,
-              background: "linear-gradient(to bottom, transparent 60%, rgba(3,8,18,0.4) 100%)",
-              borderRadius: "inherit",
-            }} />
+          <div
+            key={i}
+            className="relative flex-1 overflow-hidden"
+            style={{
+              aspectRatio: "3/4",
+              borderRadius: "16px",
+              boxShadow: glow,
+            }}
+          >
+            <Image
+              src={url}
+              alt={`Photo ${i + 1}`}
+              fill
+              loading="eager"
+              className="object-contain"
+              sizes="(max-width: 640px) 45vw, 200px"
+            />
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background:
+                  "linear-gradient(to bottom, transparent 60%, rgba(3,8,18,0.4) 100%)",
+                borderRadius: "inherit",
+              }}
+            />
           </div>
         ))}
       </div>
@@ -76,7 +118,10 @@ function PhotoStrip({ photos }: { photos: string[] }) {
   return (
     <div
       className="flex gap-3 overflow-x-auto pb-2 -mx-6 px-6"
-      style={{ scrollbarWidth: "none", animation: "fadeSlideUp 1s ease 0.55s both" }}
+      style={{
+        scrollbarWidth: "none",
+        animation: "fadeSlideUp 1s ease 0.55s both",
+      }}
     >
       {photos.map((url, i) => (
         <div
@@ -90,12 +135,23 @@ function PhotoStrip({ photos }: { photos: string[] }) {
             animation: `fadeSlideUp 0.9s ease ${0.5 + i * 0.1}s both`,
           }}
         >
-          <Image src={url} alt={`Photo ${i + 1}`} fill loading="eager" className="object-cover" sizes="152px" />
-          <div style={{
-            position: "absolute", inset: 0,
-            background: "linear-gradient(to bottom, transparent 60%, rgba(3,8,18,0.45) 100%)",
-            borderRadius: "inherit",
-          }} />
+          <Image
+            src={url}
+            alt={`Photo ${i + 1}`}
+            fill
+            loading="eager"
+            className="object-contain"
+            sizes="152px"
+          />
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background:
+                "linear-gradient(to bottom, transparent 60%, rgba(3,8,18,0.45) 100%)",
+              borderRadius: "inherit",
+            }}
+          />
         </div>
       ))}
     </div>
@@ -175,51 +231,85 @@ export default function ModernTemplate({ data }: { data: MomentData }) {
   }, [showPlayer, data.music?.track_id, autoplay]);
 
   return (
-    <div className="relative min-h-screen overflow-hidden" style={{ background: "#030812" }}>
-
+    <div
+      className="relative min-h-screen overflow-hidden"
+      style={{ background: "#030812" }}
+    >
       {/* ── Aurora background layers ── */}
       <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 0 }}>
-        <div style={{
-          position: "absolute", top: "-25%", left: "15%",
-          width: "85vw", height: "70vh",
-          background: "radial-gradient(ellipse at center, rgba(55,35,160,0.3) 0%, rgba(40,20,120,0.12) 50%, transparent 75%)",
-          filter: "blur(55px)",
-          animation: "auroraDrift1 22s ease-in-out infinite",
-        }} />
-        <div style={{
-          position: "absolute", top: "25%", right: "-15%",
-          width: "75vw", height: "65vh",
-          background: "radial-gradient(ellipse at center, rgba(90,25,140,0.22) 0%, rgba(60,10,100,0.1) 50%, transparent 75%)",
-          filter: "blur(70px)",
-          animation: "auroraDrift2 28s ease-in-out 6s infinite",
-        }} />
-        <div style={{
-          position: "absolute", bottom: "0%", left: "-10%",
-          width: "65vw", height: "50vh",
-          background: "radial-gradient(ellipse at center, rgba(15,60,120,0.2) 0%, rgba(10,40,90,0.08) 50%, transparent 75%)",
-          filter: "blur(60px)",
-          animation: "auroraDrift3 20s ease-in-out 11s infinite",
-        }} />
-        <div style={{
-          position: "absolute", bottom: "-5%", left: "50%",
-          transform: "translateX(-50%)",
-          width: "80vw", height: "30vh",
-          background: "radial-gradient(ellipse at center bottom, rgba(160,100,30,0.12) 0%, transparent 70%)",
-          filter: "blur(40px)",
-          animation: "auroraDrift1 30s ease-in-out 4s infinite",
-        }} />
+        <div
+          style={{
+            position: "absolute",
+            top: "-25%",
+            left: "15%",
+            width: "85vw",
+            height: "70vh",
+            background:
+              "radial-gradient(ellipse at center, rgba(55,35,160,0.3) 0%, rgba(40,20,120,0.12) 50%, transparent 75%)",
+            filter: "blur(55px)",
+            animation: "auroraDrift1 22s ease-in-out infinite",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            top: "25%",
+            right: "-15%",
+            width: "75vw",
+            height: "65vh",
+            background:
+              "radial-gradient(ellipse at center, rgba(90,25,140,0.22) 0%, rgba(60,10,100,0.1) 50%, transparent 75%)",
+            filter: "blur(70px)",
+            animation: "auroraDrift2 28s ease-in-out 6s infinite",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            bottom: "0%",
+            left: "-10%",
+            width: "65vw",
+            height: "50vh",
+            background:
+              "radial-gradient(ellipse at center, rgba(15,60,120,0.2) 0%, rgba(10,40,90,0.08) 50%, transparent 75%)",
+            filter: "blur(60px)",
+            animation: "auroraDrift3 20s ease-in-out 11s infinite",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            bottom: "-5%",
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: "80vw",
+            height: "30vh",
+            background:
+              "radial-gradient(ellipse at center bottom, rgba(160,100,30,0.12) 0%, transparent 70%)",
+            filter: "blur(40px)",
+            animation: "auroraDrift1 30s ease-in-out 4s infinite",
+          }}
+        />
       </div>
 
       {/* ── Cinematic vignette ── */}
-      <div style={{
-        position: "fixed", inset: 0,
-        background: "radial-gradient(ellipse at center, transparent 35%, rgba(2,5,15,0.82) 100%)",
-        pointerEvents: "none", zIndex: 2,
-      }} />
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          background:
+            "radial-gradient(ellipse at center, transparent 35%, rgba(2,5,15,0.82) 100%)",
+          pointerEvents: "none",
+          zIndex: 2,
+        }}
+      />
 
       {/* ── Star field ── */}
       {isClient && (
-        <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 1 }}>
+        <div
+          className="fixed inset-0 pointer-events-none"
+          style={{ zIndex: 1 }}
+        >
           {STARS.map((s) => (
             <div
               key={s.id}
@@ -230,10 +320,14 @@ export default function ModernTemplate({ data }: { data: MomentData }) {
                 width: `${s.size}px`,
                 height: `${s.size}px`,
                 borderRadius: "50%",
-                background: s.size > 2.5
-                  ? "radial-gradient(circle, #FFFFFF 0%, rgba(200,215,255,0.7) 50%, transparent 100%)"
-                  : "rgba(200,215,255,0.75)",
-                boxShadow: s.size > 2.5 ? `0 0 ${s.size * 3}px rgba(180,200,255,0.6)` : "none",
+                background:
+                  s.size > 2.5
+                    ? "radial-gradient(circle, #FFFFFF 0%, rgba(200,215,255,0.7) 50%, transparent 100%)"
+                    : "rgba(200,215,255,0.75)",
+                boxShadow:
+                  s.size > 2.5
+                    ? `0 0 ${s.size * 3}px rgba(180,200,255,0.6)`
+                    : "none",
                 animation: `starTwinkle ${s.twinkleDuration}s ease-in-out ${s.twinkleDelay}s infinite, starDrift ${s.driftDuration}s ease-in-out ${s.driftDelay}s infinite`,
               }}
             />
@@ -243,7 +337,10 @@ export default function ModernTemplate({ data }: { data: MomentData }) {
 
       {/* ── Shooting stars ── */}
       {isClient && (
-        <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 1 }}>
+        <div
+          className="fixed inset-0 pointer-events-none overflow-hidden"
+          style={{ zIndex: 1 }}
+        >
           {METEORS.map((m) => (
             <div
               key={m.id}
@@ -253,7 +350,8 @@ export default function ModernTemplate({ data }: { data: MomentData }) {
                 right: "-10%",
                 width: "180px",
                 height: "1.5px",
-                background: "linear-gradient(to left, transparent, rgba(255,255,220,0.9) 40%, rgba(255,255,255,0.6))",
+                background:
+                  "linear-gradient(to left, transparent, rgba(255,255,220,0.9) 40%, rgba(255,255,255,0.6))",
                 borderRadius: "2px",
                 opacity: 0,
                 transform: "rotate(-25deg)",
@@ -269,36 +367,81 @@ export default function ModernTemplate({ data }: { data: MomentData }) {
       {showModal && data.music && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-6"
-          style={{ background: "rgba(2,4,16,0.92)", backdropFilter: "blur(22px)" }}
+          style={{
+            background: "rgba(2,4,16,0.92)",
+            backdropFilter: "blur(22px)",
+          }}
         >
-          <div style={{
-            position: "absolute", inset: 0, pointerEvents: "none",
-            background: "radial-gradient(ellipse 55% 45% at 50% 50%, rgba(55,35,160,0.2) 0%, transparent 70%)",
-          }} />
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              pointerEvents: "none",
+              background:
+                "radial-gradient(ellipse 55% 45% at 50% 50%, rgba(55,35,160,0.2) 0%, transparent 70%)",
+            }}
+          />
 
           <div
             className="w-full max-w-sm flex flex-col items-center gap-6 rounded-3xl p-8 relative"
             style={{
-              background: "linear-gradient(160deg, rgba(8,12,36,0.97) 0%, rgba(4,7,22,0.99) 100%)",
+              background:
+                "linear-gradient(160deg, rgba(8,12,36,0.97) 0%, rgba(4,7,22,0.99) 100%)",
               border: "1px solid rgba(100,130,255,0.28)",
-              boxShadow: "0 40px 100px rgba(0,0,0,0.85), 0 0 80px rgba(55,35,160,0.15), inset 0 1px 0 rgba(255,255,255,0.06)",
+              boxShadow:
+                "0 40px 100px rgba(0,0,0,0.85), 0 0 80px rgba(55,35,160,0.15), inset 0 1px 0 rgba(255,255,255,0.06)",
               animation: "fadeSlideUp 0.7s cubic-bezier(0.16,1,0.3,1) both",
             }}
           >
             {/* Floating diamond ornament */}
-            <div style={{ display: "flex", alignItems: "center", gap: "12px", animation: "floatGently 6s ease-in-out infinite" }}>
-              <div style={{ flex: 1, maxWidth: "40px", height: "1px", background: "linear-gradient(to right, transparent, rgba(255,213,128,0.4))" }} />
-              <div style={{ width: "7px", height: "7px", background: "#FFD580", transform: "rotate(45deg)", boxShadow: "0 0 14px rgba(255,213,128,0.7)", flexShrink: 0 }} />
-              <div style={{ flex: 1, maxWidth: "40px", height: "1px", background: "linear-gradient(to left, transparent, rgba(255,213,128,0.4))" }} />
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                animation: "floatGently 6s ease-in-out infinite",
+              }}
+            >
+              <div
+                style={{
+                  flex: 1,
+                  maxWidth: "40px",
+                  height: "1px",
+                  background:
+                    "linear-gradient(to right, transparent, rgba(255,213,128,0.4))",
+                }}
+              />
+              <div
+                style={{
+                  width: "7px",
+                  height: "7px",
+                  background: "#FFD580",
+                  transform: "rotate(45deg)",
+                  boxShadow: "0 0 14px rgba(255,213,128,0.7)",
+                  flexShrink: 0,
+                }}
+              />
+              <div
+                style={{
+                  flex: 1,
+                  maxWidth: "40px",
+                  height: "1px",
+                  background:
+                    "linear-gradient(to left, transparent, rgba(255,213,128,0.4))",
+                }}
+              />
             </div>
 
             {data.music.album_image && (
-              <div style={{
-                borderRadius: "18px",
-                overflow: "hidden",
-                boxShadow: "0 10px 50px rgba(55,35,160,0.4), 0 0 0 1px rgba(100,130,255,0.25), 0 0 30px rgba(80,100,220,0.2)",
-                animation: "auroraPulse 5s ease-in-out infinite",
-              }}>
+              <div
+                style={{
+                  borderRadius: "18px",
+                  overflow: "hidden",
+                  boxShadow:
+                    "0 10px 50px rgba(55,35,160,0.4), 0 0 0 1px rgba(100,130,255,0.25), 0 0 30px rgba(80,100,220,0.2)",
+                  animation: "auroraPulse 5s ease-in-out infinite",
+                }}
+              >
                 <Image
                   loading="eager"
                   src={data.music.album_image}
@@ -311,36 +454,60 @@ export default function ModernTemplate({ data }: { data: MomentData }) {
             )}
 
             <div className="text-center">
-              <p style={{ color: "rgba(100,130,255,0.5)", fontSize: "10px", letterSpacing: "0.5em", textTransform: "uppercase", marginBottom: "10px" }}>
+              <p
+                style={{
+                  color: "rgba(100,130,255,0.5)",
+                  fontSize: "10px",
+                  letterSpacing: "0.5em",
+                  textTransform: "uppercase",
+                  marginBottom: "10px",
+                }}
+              >
                 a song for you
               </p>
-              <p style={{
-                fontFamily: "var(--font-cormorant)",
-                fontStyle: "italic",
-                color: "#EEF2FF",
-                fontSize: "1.5rem",
-                lineHeight: 1.25,
-                textShadow: "0 0 30px rgba(100,130,255,0.4)",
-              }}>
+              <p
+                style={{
+                  fontFamily: "var(--font-cormorant)",
+                  fontStyle: "italic",
+                  color: "#EEF2FF",
+                  fontSize: "1.5rem",
+                  lineHeight: 1.25,
+                  textShadow: "0 0 30px rgba(100,130,255,0.4)",
+                }}
+              >
                 {data.music.name}
               </p>
-              <p style={{ color: "rgba(100,130,255,0.55)", fontSize: "0.9rem", marginTop: "6px" }}>
+              <p
+                style={{
+                  color: "rgba(100,130,255,0.55)",
+                  fontSize: "0.9rem",
+                  marginTop: "6px",
+                }}
+              >
                 by {data.music.artist_name}
               </p>
             </div>
 
-            <div style={{
-              width: "100%", height: "1px",
-              background: "linear-gradient(to right, transparent, rgba(255,213,128,0.3), rgba(100,130,255,0.2), transparent)",
-            }} />
+            <div
+              style={{
+                width: "100%",
+                height: "1px",
+                background:
+                  "linear-gradient(to right, transparent, rgba(255,213,128,0.3), rgba(100,130,255,0.2), transparent)",
+              }}
+            />
 
             <button
-              onClick={() => { setAutoplay(true); setDismissed(true); }}
+              onClick={() => {
+                setAutoplay(true);
+                setDismissed(true);
+              }}
               className="w-full py-3.5 rounded-2xl transition-all active:scale-95"
               style={{
                 background: "linear-gradient(135deg, #FFD580 0%, #C9960A 100%)",
                 color: "#030812",
-                boxShadow: "0 6px 28px rgba(255,213,128,0.35), inset 0 1px 0 rgba(255,255,255,0.25)",
+                boxShadow:
+                  "0 6px 28px rgba(255,213,128,0.35), inset 0 1px 0 rgba(255,255,255,0.25)",
                 letterSpacing: "0.18em",
                 textTransform: "uppercase",
                 fontSize: "11px",
@@ -352,7 +519,11 @@ export default function ModernTemplate({ data }: { data: MomentData }) {
 
             <button
               onClick={() => setDismissed(true)}
-              style={{ color: "rgba(100,130,255,0.3)", fontSize: "11px", letterSpacing: "0.3em" }}
+              style={{
+                color: "rgba(100,130,255,0.3)",
+                fontSize: "11px",
+                letterSpacing: "0.3em",
+              }}
               className="hover:opacity-70 transition-opacity"
             >
               I&apos;ll listen later
@@ -377,7 +548,13 @@ export default function ModernTemplate({ data }: { data: MomentData }) {
             animation: "fadeSlideUp 0.6s ease both",
           }}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            aria-hidden="true"
+          >
             <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
           </svg>
           Listen on Spotify
@@ -396,29 +573,59 @@ export default function ModernTemplate({ data }: { data: MomentData }) {
         {/* "with love" header */}
         <div
           className="flex items-center gap-3 mb-14"
-          style={{ animation: "fadeSlideUp 1.1s cubic-bezier(0.16,1,0.3,1) 0.2s both" }}
+          style={{
+            animation: "fadeSlideUp 1.1s cubic-bezier(0.16,1,0.3,1) 0.2s both",
+          }}
         >
-          <div style={{ flex: 1, height: "1px", background: "linear-gradient(to right, transparent, rgba(255,213,128,0.45))" }} />
-          <div style={{
-            width: "7px", height: "7px",
-            background: "#FFD580",
-            transform: "rotate(45deg)",
-            boxShadow: "0 0 14px rgba(255,213,128,0.7)",
-            flexShrink: 0,
-            animation: "floatGently 7s ease-in-out infinite",
-          }} />
-          <span style={{ color: "#FFD580", fontSize: "10px", letterSpacing: "0.55em", textTransform: "uppercase", flexShrink: 0 }}>
+          <div
+            style={{
+              flex: 1,
+              height: "1px",
+              background:
+                "linear-gradient(to right, transparent, rgba(255,213,128,0.45))",
+            }}
+          />
+          <div
+            style={{
+              width: "7px",
+              height: "7px",
+              background: "#FFD580",
+              transform: "rotate(45deg)",
+              boxShadow: "0 0 14px rgba(255,213,128,0.7)",
+              flexShrink: 0,
+              animation: "floatGently 7s ease-in-out infinite",
+            }}
+          />
+          <span
+            style={{
+              color: "#FFD580",
+              fontSize: "10px",
+              letterSpacing: "0.55em",
+              textTransform: "uppercase",
+              flexShrink: 0,
+            }}
+          >
             with love
           </span>
-          <div style={{
-            width: "7px", height: "7px",
-            background: "#FFD580",
-            transform: "rotate(45deg)",
-            boxShadow: "0 0 14px rgba(255,213,128,0.7)",
-            flexShrink: 0,
-            animation: "floatGently 7s ease-in-out 1s infinite",
-          }} />
-          <div style={{ flex: 1, height: "1px", background: "linear-gradient(to left, transparent, rgba(255,213,128,0.45))" }} />
+          <div
+            style={{
+              width: "7px",
+              height: "7px",
+              background: "#FFD580",
+              transform: "rotate(45deg)",
+              boxShadow: "0 0 14px rgba(255,213,128,0.7)",
+              flexShrink: 0,
+              animation: "floatGently 7s ease-in-out 1s infinite",
+            }}
+          />
+          <div
+            style={{
+              flex: 1,
+              height: "1px",
+              background:
+                "linear-gradient(to left, transparent, rgba(255,213,128,0.45))",
+            }}
+          />
         </div>
 
         {/* Occasion / title */}
@@ -432,8 +639,10 @@ export default function ModernTemplate({ data }: { data: MomentData }) {
             letterSpacing: "0.01em",
             color: "#EEF2FF",
             marginBottom: "16px",
-            textShadow: "0 2px 40px rgba(100,130,255,0.25), 0 0 80px rgba(80,100,200,0.12)",
-            animation: "fadeSlideUp 1.2s cubic-bezier(0.16,1,0.3,1) 0.35s both, titleGlow 6s ease-in-out 2s infinite",
+            textShadow:
+              "0 2px 40px rgba(100,130,255,0.25), 0 0 80px rgba(80,100,200,0.12)",
+            animation:
+              "fadeSlideUp 1.2s cubic-bezier(0.16,1,0.3,1) 0.35s both, titleGlow 6s ease-in-out 2s infinite",
           }}
         >
           {data.occasion || "A Love Letter"}
@@ -461,7 +670,8 @@ export default function ModernTemplate({ data }: { data: MomentData }) {
         <div
           style={{
             height: "1px",
-            background: "linear-gradient(to right, rgba(100,130,255,0.3), rgba(255,213,128,0.2), rgba(100,130,255,0.1), transparent)",
+            background:
+              "linear-gradient(to right, rgba(100,130,255,0.3), rgba(255,213,128,0.2), rgba(100,130,255,0.1), transparent)",
             margin: "32px 0 40px",
             animation: "fadeSlideUp 1s ease 0.55s both",
           }}
@@ -483,29 +693,40 @@ export default function ModernTemplate({ data }: { data: MomentData }) {
             background: "rgba(255,255,255,0.038)",
             border: "1px solid rgba(100,130,255,0.18)",
             backdropFilter: "blur(18px)",
-            boxShadow: "0 8px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.07)",
+            boxShadow:
+              "0 8px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.07)",
             animation: "fadeSlideUp 1.1s ease 0.7s both",
           }}
         >
           {/* Left accent bar */}
-          <div style={{
-            position: "absolute",
-            top: "16px", left: 0, bottom: "16px",
-            width: "2.5px",
-            background: "linear-gradient(to bottom, transparent, #FFD580 30%, rgba(255,213,128,0.4) 70%, transparent)",
-            borderRadius: "2px",
-          }} />
+          <div
+            style={{
+              position: "absolute",
+              top: "16px",
+              left: 0,
+              bottom: "16px",
+              width: "2.5px",
+              background:
+                "linear-gradient(to bottom, transparent, #FFD580 30%, rgba(255,213,128,0.4) 70%, transparent)",
+              borderRadius: "2px",
+            }}
+          />
 
           {/* Shimmer sweep */}
-          <div style={{
-            position: "absolute",
-            top: 0, bottom: 0, left: 0,
-            width: "50%",
-            background: "linear-gradient(90deg, transparent, rgba(180,200,255,0.04), transparent)",
-            animation: "shimmerSlide 11s ease-in-out 3s infinite",
-            pointerEvents: "none",
-            borderRadius: "inherit",
-          }} />
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              bottom: 0,
+              left: 0,
+              width: "50%",
+              background:
+                "linear-gradient(90deg, transparent, rgba(180,200,255,0.04), transparent)",
+              animation: "shimmerSlide 11s ease-in-out 3s infinite",
+              pointerEvents: "none",
+              borderRadius: "inherit",
+            }}
+          />
 
           <p
             style={{
@@ -523,11 +744,15 @@ export default function ModernTemplate({ data }: { data: MomentData }) {
 
           {data.sender && (
             <>
-              <div style={{
-                width: "100%", height: "1px",
-                background: "linear-gradient(to right, rgba(255,213,128,0.25), rgba(100,130,255,0.2), transparent)",
-                margin: "28px 0 18px",
-              }} />
+              <div
+                style={{
+                  width: "100%",
+                  height: "1px",
+                  background:
+                    "linear-gradient(to right, rgba(255,213,128,0.25), rgba(100,130,255,0.2), transparent)",
+                  margin: "28px 0 18px",
+                }}
+              />
               <p
                 style={{
                   fontFamily: "var(--font-cormorant)",
@@ -555,13 +780,16 @@ export default function ModernTemplate({ data }: { data: MomentData }) {
             {data.music?.name && (
               <div className="flex items-center gap-4 mb-4">
                 {data.music.album_image && (
-                  <div style={{
-                    borderRadius: "12px",
-                    overflow: "hidden",
-                    boxShadow: "0 8px 32px rgba(0,0,0,0.55), 0 0 0 1px rgba(100,130,255,0.2), 0 0 24px rgba(80,100,220,0.15)",
-                    flexShrink: 0,
-                    animation: "floatGently 7s ease-in-out infinite",
-                  }}>
+                  <div
+                    style={{
+                      borderRadius: "12px",
+                      overflow: "hidden",
+                      boxShadow:
+                        "0 8px 32px rgba(0,0,0,0.55), 0 0 0 1px rgba(100,130,255,0.2), 0 0 24px rgba(80,100,220,0.15)",
+                      flexShrink: 0,
+                      animation: "floatGently 7s ease-in-out infinite",
+                    }}
+                  >
                     <Image
                       src={data.music.album_image}
                       alt={data.music.name}
@@ -573,19 +801,35 @@ export default function ModernTemplate({ data }: { data: MomentData }) {
                   </div>
                 )}
                 <div>
-                  <p style={{ color: "#4A5890", fontSize: "10px", letterSpacing: "0.45em", textTransform: "uppercase", marginBottom: "4px" }}>
+                  <p
+                    style={{
+                      color: "#4A5890",
+                      fontSize: "10px",
+                      letterSpacing: "0.45em",
+                      textTransform: "uppercase",
+                      marginBottom: "4px",
+                    }}
+                  >
                     a song for you
                   </p>
-                  <p style={{
-                    fontFamily: "var(--font-cormorant)",
-                    fontStyle: "italic",
-                    color: "#C8D4F8",
-                    fontSize: "1.15rem",
-                  }}>
+                  <p
+                    style={{
+                      fontFamily: "var(--font-cormorant)",
+                      fontStyle: "italic",
+                      color: "#C8D4F8",
+                      fontSize: "1.15rem",
+                    }}
+                  >
                     {data.music.name}
                   </p>
                   {data.music.artist_name && (
-                    <p style={{ color: "#4A5890", fontSize: "0.8rem", marginTop: "2px" }}>
+                    <p
+                      style={{
+                        color: "#4A5890",
+                        fontSize: "0.8rem",
+                        marginTop: "2px",
+                      }}
+                    >
                       {data.music.artist_name}
                     </p>
                   )}
@@ -597,7 +841,8 @@ export default function ModernTemplate({ data }: { data: MomentData }) {
               style={{
                 borderRadius: "14px",
                 overflow: "hidden",
-                boxShadow: "0 8px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(100,130,255,0.15)",
+                boxShadow:
+                  "0 8px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(100,130,255,0.15)",
                 width: "100%",
                 minHeight: "152px",
               }}
@@ -610,25 +855,53 @@ export default function ModernTemplate({ data }: { data: MomentData }) {
           className="flex items-center gap-4 mt-4"
           style={{ animation: "fadeSlideUp 1.1s ease 1.1s both" }}
         >
-          <div style={{ flex: 1, height: "1px", background: "linear-gradient(to right, transparent, rgba(100,130,255,0.2))" }} />
-          <div style={{
-            width: "5px", height: "5px",
-            background: "rgba(255,213,128,0.5)",
-            transform: "rotate(45deg)",
-            flexShrink: 0,
-            animation: "floatGently 9s ease-in-out 2s infinite",
-          }} />
-          <p style={{ color: "#222840", fontSize: "10px", letterSpacing: "0.38em", textTransform: "uppercase", flexShrink: 0 }}>
+          <div
+            style={{
+              flex: 1,
+              height: "1px",
+              background:
+                "linear-gradient(to right, transparent, rgba(100,130,255,0.2))",
+            }}
+          />
+          <div
+            style={{
+              width: "5px",
+              height: "5px",
+              background: "rgba(255,213,128,0.5)",
+              transform: "rotate(45deg)",
+              flexShrink: 0,
+              animation: "floatGently 9s ease-in-out 2s infinite",
+            }}
+          />
+          <p
+            style={{
+              color: "#222840",
+              fontSize: "10px",
+              letterSpacing: "0.38em",
+              textTransform: "uppercase",
+              flexShrink: 0,
+            }}
+          >
             made with ♡ on 2usforever.com
           </p>
-          <div style={{
-            width: "5px", height: "5px",
-            background: "rgba(255,213,128,0.5)",
-            transform: "rotate(45deg)",
-            flexShrink: 0,
-            animation: "floatGently 9s ease-in-out 3s infinite",
-          }} />
-          <div style={{ flex: 1, height: "1px", background: "linear-gradient(to left, transparent, rgba(100,130,255,0.2))" }} />
+          <div
+            style={{
+              width: "5px",
+              height: "5px",
+              background: "rgba(255,213,128,0.5)",
+              transform: "rotate(45deg)",
+              flexShrink: 0,
+              animation: "floatGently 9s ease-in-out 3s infinite",
+            }}
+          />
+          <div
+            style={{
+              flex: 1,
+              height: "1px",
+              background:
+                "linear-gradient(to left, transparent, rgba(100,130,255,0.2))",
+            }}
+          />
         </div>
       </div>
 
