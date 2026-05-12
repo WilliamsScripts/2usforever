@@ -22,17 +22,26 @@ function usePetalAnimation() {
     resizeCanvas();
     window.addEventListener("resize", resizeCanvas);
 
-    const symbols = ["♡", "✿", "❀", "·", "°"];
-    const petals = Array.from({ length: 38 }).map(() => ({
+    const symbols = ["♡", "✿", "❀", "·", "✦", "°", "❁", "❧"];
+    const colors = [
+      "#C8516A",
+      "#D4738A",
+      "#E8A0B0",
+      "#C8516A",
+      "#B84060",
+      "#D4899F",
+    ];
+    const petals = Array.from({ length: 58 }).map(() => ({
       x: Math.random() * window.innerWidth,
       y: Math.random() * window.innerHeight,
-      size: 10 + Math.random() * 14,
-      speed: 0.3 + Math.random() * 0.7,
-      drift: (Math.random() - 0.5) * 0.4,
-      opacity: 0.15 + Math.random() * 0.3,
+      size: 9 + Math.random() * 16,
+      speed: 0.2 + Math.random() * 0.65,
+      drift: (Math.random() - 0.5) * 0.55,
+      opacity: 0.08 + Math.random() * 0.28,
       sym: symbols[Math.floor(Math.random() * symbols.length)],
+      color: colors[Math.floor(Math.random() * colors.length)],
       rot: Math.random() * 360,
-      rotSpeed: (Math.random() - 0.5) * 0.5,
+      rotSpeed: (Math.random() - 0.5) * 0.55,
     }));
 
     function drawPetals() {
@@ -42,7 +51,7 @@ function usePetalAnimation() {
         ctx.save();
         ctx.globalAlpha = p.opacity;
         ctx.font = `${p.size}px serif`;
-        ctx.fillStyle = "#C8516A";
+        ctx.fillStyle = p.color;
         ctx.translate(p.x, p.y);
         ctx.rotate((p.rot * Math.PI) / 180);
         ctx.fillText(p.sym, 0, 0);
@@ -50,8 +59,8 @@ function usePetalAnimation() {
         p.y += p.speed;
         p.x += p.drift;
         p.rot += p.rotSpeed;
-        if (p.y > window.innerHeight + 20) {
-          p.y = -20;
+        if (p.y > window.innerHeight + 24) {
+          p.y = -24;
           p.x = Math.random() * window.innerWidth;
         }
       });
@@ -107,10 +116,10 @@ export default function LandingFrame({
         </Link>
         <ul className="nav-links">
           <li>
-            <Link href="/#occasions">Occasions</Link>
+            <Link href="/#how">How it works</Link>
           </li>
           <li>
-            <Link href="/#how">How it works</Link>
+            <Link href="/#occasions">Occasions</Link>
           </li>
           <li>
             <Link href="/#pricing">Pricing</Link>
@@ -142,10 +151,9 @@ export default function LandingFrame({
           </div>
           <div className="footer-col">
             <h5>Company</h5>
-            <a href="#">About us</a>
             <Link href="/#how">How it works</Link>
             <Link href="/#pricing">Pricing</Link>
-            <a href="#">Contact</a>
+            <Link href="/#occasions">Occasions</Link>
           </div>
           <div className="footer-col">
             <h5>Legal</h5>
