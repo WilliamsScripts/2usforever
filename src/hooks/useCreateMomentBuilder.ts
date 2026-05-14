@@ -152,7 +152,12 @@ export function useCreateMomentBuilder() {
 
   const generateMessage = async () => {
     try {
-      const generated = await generateMessageMutation.mutateAsync({ occasion });
+      const generated = await generateMessageMutation.mutateAsync({
+        occasion,
+        headline,
+        sender: sender ?? "",
+        recipient: recipient ?? "",
+      });
       form.setValue("message", generated);
       toast.success("Generated love message");
     } catch (error) {
@@ -172,6 +177,9 @@ export function useCreateMomentBuilder() {
     try {
       const improved = await improveMessageMutation.mutateAsync({
         occasion,
+        headline,
+        sender: sender ?? "",
+        recipient: recipient ?? "",
         message: currentMessage,
       });
       form.setValue("message", improved);

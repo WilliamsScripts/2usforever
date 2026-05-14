@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenAI, ThinkingLevel } from "@google/genai";
+import { buildImproveMessagePrompt } from "@/lib/gemini-message-prompts";
 
 const API_KEY = process.env.GEMINI_API_KEY;
 
@@ -12,7 +13,13 @@ const genAI = new GoogleGenAI({});
 export async function POST(req: NextRequest) {
   const body = await req.json();
 
-  const prompt = `Improve this message to a short, sweet, romantic, human ${body.occasion} message (4-7 sentences), written as if by a person to their partner. Make sure it is sincere and not cheesy, and does not sound like it was written by an AI. Message: "${body.message}"`;
+  const prompt = buildImproveMessagePrompt({
+    occasion: body.occasion,
+    headline: body.headline,
+    sender: body.sender,
+    recipient: body.recipient,
+    message: body.message,
+  });
 
   try {
     const response = await genAI.models.generateContent({
@@ -36,7 +43,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message });
   } catch (err) {
     return NextResponse.json(
-      { error: "Failed to generate message.", details: String(err) },
+      { error: "Failed to improve message.", details: String(err) },
       { status: 500 },
     );
   }

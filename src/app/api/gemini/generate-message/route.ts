@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenAI, ThinkingLevel } from "@google/genai";
+import { buildGenerateMessagePrompt } from "@/lib/gemini-message-prompts";
 
 const API_KEY = process.env.GEMINI_API_KEY;
 
@@ -12,7 +13,12 @@ const genAI = new GoogleGenAI({});
 export async function POST(req: NextRequest) {
   const body = await req.json();
 
-  const prompt = `Write a short, sweet, romantic, human ${body.occasion} message (4-7 sentences), written as if by a person to their partner. Make sure it is sincere and not cheesy, and does not sound like it was written by an AI.`;
+  const prompt = buildGenerateMessagePrompt({
+    occasion: body.occasion,
+    headline: body.headline,
+    sender: body.sender,
+    recipient: body.recipient,
+  });
 
   try {
     const response = await genAI.models.generateContent({
