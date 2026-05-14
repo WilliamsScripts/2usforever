@@ -6,5 +6,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/timeline/:path*", "/auth/callback"],
+  matcher: ["/", "/timeline/:path*", "/auth/callback"],
 };

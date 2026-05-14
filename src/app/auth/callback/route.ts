@@ -1,19 +1,35 @@
-import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { type NextRequest, NextResponse } from "next/server";
+import { createCallbackClient } from "@/lib/supabase/server";
 
-export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
+function safeNextPath(value: string | null) {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+    return "/timeline";
+  }
+  return value;
+}
+
+export async function GET(request: NextRequest) {
+  const { searchParams } = request.nextUrl;
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/timeline";
+  const next = safeNextPath(searchParams.get("next"));
 
-  if (code) {
-    const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-
-    if (!error) {
-      return NextResponse.redirect(`${origin}${next}`);
-    }
+  if (!code) {
+    return NextResponse.redirect(
+      new URL("/timeline/login?error=auth", request.url),
+    );
   }
 
-  return NextResponse.redirect(`${origin}/timeline/login?error=auth`);
+  const redirectTarget = new URL(next, request.url);
+  const response = NextResponse.redirect(redirectTarget);
+  const supabase = createCallbackClient(request, response);
+  const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+  if (error) {
+    console.error("[auth/callback]", error.message);
+    return NextResponse.redirect(
+      new URL("/timeline/login?error=auth", request.url),
+    );
+  }
+
+  return response;
 }

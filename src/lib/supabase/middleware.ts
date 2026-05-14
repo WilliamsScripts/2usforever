@@ -3,6 +3,20 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getSupabaseAnonKey, getSupabaseUrl } from "./env";
 
 export async function updateSession(request: NextRequest) {
+  const code = request.nextUrl.searchParams.get("code");
+  const { pathname } = request.nextUrl;
+
+  // Supabase often redirects to Site URL (/) with ?code= when the exact
+  // emailRedirectTo is not allowlisted — forward to our callback handler.
+  if (code && pathname !== "/auth/callback") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/auth/callback";
+    if (!url.searchParams.has("next")) {
+      url.searchParams.set("next", "/timeline");
+    }
+    return NextResponse.redirect(url);
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(getSupabaseUrl(), getSupabaseAnonKey(), {
@@ -26,7 +40,6 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { pathname } = request.nextUrl;
   const isTimelineLogin = pathname === "/timeline/login";
   const isTimelineProtected =
     pathname.startsWith("/timeline") && !isTimelineLogin;
