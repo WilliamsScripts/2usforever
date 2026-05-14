@@ -235,7 +235,7 @@ export function WhatsAppButton({
               href={href}
               style={{
                 display: "inline-block",
-                padding: "12px 24px",
+                padding: "0px 16px",
                 fontSize: 14,
                 fontWeight: 500,
                 color: emailColors.textDark,
@@ -253,7 +253,7 @@ export function WhatsAppButton({
                   <tr>
                     <td
                       style={{
-                        paddingRight: 10,
+                        paddingRight: 4,
                         verticalAlign: "middle",
                         lineHeight: 0,
                       }}
@@ -261,8 +261,8 @@ export function WhatsAppButton({
                       <Img
                         src={WHATSAPP_LOGO_SRC}
                         alt=""
-                        width={20}
-                        height={20}
+                        width={40}
+                        height={40}
                         style={{ display: "block", border: 0 }}
                       />
                     </td>
