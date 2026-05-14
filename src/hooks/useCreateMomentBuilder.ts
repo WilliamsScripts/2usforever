@@ -133,6 +133,7 @@ export function useCreateMomentBuilder() {
         type: "manual",
         message: "Choose a date or send immediately",
       });
+      toast.error("Choose a delivery date or send immediately");
       return;
     }
 
@@ -142,10 +143,14 @@ export function useCreateMomentBuilder() {
       );
       setSavedMoment(record);
       setSuccessModalOpen(true);
-      toast.success("Moment message has been saved successful ❤️");
+      toast.success(
+        deliveryTiming === "scheduled"
+          ? "Moment scheduled successfully"
+          : "Moment created and on its way",
+      );
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : "Failed to save this moment";
+        error instanceof Error ? error.message : "Could not create this moment";
       toast.error(errorMessage);
     }
   });
@@ -262,10 +267,6 @@ export function useCreateMomentBuilder() {
     selectTrack,
     handleSave,
     isSavingMoment: createMomentMutation.isPending,
-    saveError:
-      createMomentMutation.error instanceof Error
-        ? createMomentMutation.error.message
-        : "",
     savedMoment,
     successModalOpen,
     setSuccessModalOpen,

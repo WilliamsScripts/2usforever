@@ -38,6 +38,7 @@ export function useTimelineLogin(next: string) {
 
     try {
       const result = await verifyOtpMutation.mutateAsync({ email, token: code, next });
+      toast.success("You're signed in");
       router.push(result.next);
       router.refresh();
     } catch {

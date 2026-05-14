@@ -63,7 +63,6 @@ export default function CreateMomentBuilder() {
     selectTrack,
     handleSave,
     isSavingMoment,
-    saveError,
     savedMoment,
     successModalOpen,
     setSuccessModalOpen,
@@ -616,7 +615,6 @@ export default function CreateMomentBuilder() {
             >
               {isSavingMoment ? "Saving…" : "Save ✨"}
             </Button>
-            {saveError ? <p className="field-error">{saveError}</p> : null}
           </div>
         )}
 

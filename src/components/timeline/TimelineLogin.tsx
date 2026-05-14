@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useEffect } from "react";
+import { toast } from "sonner";
 import { TimelineFrame } from "@/components/timeline/TimelineFrame";
 import { useTimelineLogin } from "@/hooks/useTimelineLogin";
 
@@ -9,6 +11,11 @@ export function TimelineLogin() {
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "/timeline";
   const authError = searchParams.get("error") === "auth";
+
+  useEffect(() => {
+    if (!authError) return;
+    toast.error("That sign-in session expired. Request a new code below.");
+  }, [authError]);
 
   const {
     step,
