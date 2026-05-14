@@ -1,0 +1,18 @@
+export type SenderConfirmationEmailProps = {
+  senderName?: string | null;
+  recipientName: string;
+  occasion: string;
+  momentUrl: string;
+  scheduledDate?: string | null;
+  headline?: string | null;
+  recipientPhone?: string | null;
+};
+
+export type RecipientMomentEmailProps = {
+  recipientName: string;
+  senderName?: string | null;
+  occasion: string;
+  momentUrl: string;
+  scheduledDate?: string | null;
+  headline?: string | null;
+};

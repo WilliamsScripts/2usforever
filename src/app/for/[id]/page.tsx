@@ -1,24 +1,6 @@
 import { headers } from "next/headers";
 import MomentDisplay from "./MomentDisplay";
-
-async function getMoment(id: string) {
-  const headersList = await headers();
-
-  const host = headersList.get("host");
-  const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
-
-  const res = await fetch(
-    `${protocol}://${host}/api/moments?id=${encodeURIComponent(id)}`,
-    {
-      cache: "no-store",
-    },
-  );
-
-  if (!res.ok) return null;
-
-  const { data } = await res.json();
-  return data;
-}
+import { getMoment } from "@/services/moments.service";
 
 export default async function MomentPage({
   params,
@@ -27,7 +9,17 @@ export default async function MomentPage({
 }) {
   const { id } = await params;
 
-  const data = await getMoment(id);
+  const headersList = await headers();
+  const host = headersList.get("host");
+  const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
+  const baseUrl = host ? `${protocol}://${host}` : undefined;
+
+  let data = null;
+  try {
+    data = await getMoment(id, baseUrl);
+  } catch {
+    data = null;
+  }
 
   if (!data) {
     return (

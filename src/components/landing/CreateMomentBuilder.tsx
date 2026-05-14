@@ -1,12 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useRef, useState } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useWatch } from "react-hook-form";
-import { z } from "zod";
 import CustomImagePicker from "../custom-image-picker";
-import { UploadResult } from "@/services/cloudinary.service";
 import {
   Dialog,
   DialogContent,
@@ -16,396 +11,118 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import Link from "next/link";
 import {
+  CalendarDays,
   ChevronLeft,
   ChevronRight,
   Loader2,
   Sparkles,
   Wand2,
+  Zap,
 } from "lucide-react";
-import { toast } from "sonner";
-import { useTemplates } from "@/context/TemplateContext";
-
-const OCCASIONS = [
-  "💌 Love Note",
-  "💍 Proposal",
-  "💑 Anniversary",
-  "🎂 Birthday",
-  "✈️ Surprise Drop",
-  "🎊 Apology",
-  "🎄 Christmas",
-  "💝 Valentine's Day",
-  "🕌 Eid",
-  "🙏 Thanksgiving",
-  "🎓 Graduation",
-  "🏠 New Home",
-  "🤰 Baby on the Way",
-  "🎉 Congratulations",
-  "🌹 Mother's Day",
-  "🦸 Father's Day",
-  "💐 Get Well Soon",
-  "🛫 Farewell",
-  "👋 Welcome",
-];
-
-const STEP_LABELS = [
-  "Occasion",
-  "Message",
-  "Photos",
-  "Song",
-  "Template",
-  "Preview",
-];
-
-const TOTAL_STEPS = STEP_LABELS.length;
-
-const musicSchema = z.object({
-  track_id: z.string().min(1),
-  name: z.string().min(1),
-  artist_name: z.string().min(1),
-  spotify_url: z.string().url(),
-  album_image: z.string().url().nullable(),
-});
-
-// ADD template to the form validation schema
-const createMomentSchema = z.object({
-  occasion: z.string().min(1, "Please select an occasion"),
-  headline: z.string().trim().max(120).optional(),
-  recipient: z.string().trim().min(1, "Their name is required"),
-  message: z.string().trim().max(2000).optional(),
-  sender: z.string().trim().max(120).optional(),
-  photos: z.array(z.string().url()).max(5).optional(),
-  music: musicSchema.optional(),
-  template: z.string().min(1, "Please select a template"),
-  sender_email: z
-    .string()
-    .trim()
-    .min(1, "Your email is required")
-    .email("Enter a valid email"),
-  recipient_email: z
-    .string()
-    .email("Enter a valid email")
-    .trim()
-    .max(120)
-    .optional()
-    .nullable()
-    .or(z.literal(""))
-    .or(z.null()),
-  recipient_phone: z.string().trim().length(11, "Enter 11 digits for phone"),
-});
-
-type CreateMomentFormValues = z.infer<typeof createMomentSchema>;
-
-type SpotifyTrackResult = {
-  id: string;
-  name: string;
-  artist: string;
-  albumImage: string | null;
-  spotifyUrl: string | null;
-  trackId: string;
-};
-
-type CreatedMomentRecord = {
-  id: string;
-  occasion: string | null;
-  headline: string | null;
-  recipient: string | null;
-  sender: string | null;
-  message: string | null;
-  photos: string[] | null;
-  music: {
-    track_id: string;
-    name: string;
-    artist_name: string;
-    spotify_url: string;
-    album_image: string | null;
-  } | null;
-  created_at: string;
-  template: string; // comment out here if not needed in server data
-};
+import { todayDateInputValue } from "@/lib/scheduled-date";
+import { cn } from "@/lib/utils";
+import { useCreateMomentBuilder } from "@/hooks/useCreateMomentBuilder";
+import {
+  BUILDER_STEP_LABELS,
+  BUILDER_TOTAL_STEPS,
+  OCCASIONS,
+} from "@/types/moment";
 
 export default function CreateMomentBuilder() {
-  const TEMPLATES = useTemplates();
-
-  const form = useForm<CreateMomentFormValues>({
-    resolver: zodResolver(createMomentSchema),
-    defaultValues: {
-      occasion: OCCASIONS[0],
-      headline: "",
-      recipient: "",
-      message: "",
-      sender: "",
-      photos: [],
-      music: undefined,
-      template: TEMPLATES[0]?.id || "classic",
-      sender_email: "",
-      recipient_email: "",
-      recipient_phone: "",
-    },
-  });
-
-  // Control state now comes from form (single source of truth)
-  const occasion = useWatch({ control: form.control, name: "occasion" });
-  const headline = useWatch({ control: form.control, name: "headline" }) ?? "";
-  const recipient = useWatch({ control: form.control, name: "recipient" });
-  const message = useWatch({ control: form.control, name: "message" });
-  const sender = useWatch({ control: form.control, name: "sender" });
-  const selectedMusic = useWatch({ control: form.control, name: "music" });
-  const photos = useWatch({ control: form.control, name: "photos" }) ?? [];
-  const recipient_phone = useWatch({
-    control: form.control,
-    name: "recipient_phone",
-  });
-  // Template comes from form, not local state anymore:
-  const selectedTemplate = useWatch({
-    control: form.control,
-    name: "template",
-  });
-
-  const [step, setStep] = useState(1);
-  const [isMusicModalOpen, setIsMusicModalOpen] = useState(false);
-  const [musicQuery, setMusicQuery] = useState("");
-  const [musicResults, setMusicResults] = useState<SpotifyTrackResult[]>([]);
-  const [isSearchingMusic, setIsSearchingMusic] = useState(false);
-  const [musicError, setMusicError] = useState("");
-  const [isSavingMoment, setIsSavingMoment] = useState(false);
-  const [saveError, setSaveError] = useState("");
-  const [savedMoment, setSavedMoment] = useState<CreatedMomentRecord | null>(
-    null,
-  );
-  const [successModalOpen, setSuccessModalOpen] = useState(false);
-  const [isGeneratingMessage, setIsGeneratingMessage] = useState(false);
-  const [isImprovingMessage, setIsImprovingMessage] = useState(false);
-  const scrollerRef = useRef<HTMLDivElement>(null);
-  const [showLeft, setShowLeft] = useState(false);
-  const [showRight, setShowRight] = useState(true);
-
-  const updateFades = () => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    setShowLeft(el.scrollLeft > 8);
-    setShowRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 8);
-  };
-
-  const nudge = (dir: 1 | -1) => {
-    scrollerRef.current?.scrollBy({ left: dir * 200, behavior: "smooth" });
-  };
-
-  const preview = useMemo(() => {
-    const safeRecipient = recipient?.trim() || "";
-    const safeSender = sender?.trim() || "";
-    const safeMessage = message?.trim() || "";
-
-    const slug = safeRecipient.toLowerCase().replace(/[^a-z0-9]/g, "");
-    const title =
-      headline.trim() || `${occasion} for ${safeRecipient || "My Love"} ♡`;
-    const url = `2usforever.com/for/${slug || "mylove"}`;
-    const letter = safeMessage
-      ? safeMessage + (safeSender ? `\n\n— ${safeSender}` : "")
-      : `Dear ${safeRecipient || "my love"},\n\nYou came into my life and changed everything. Every moment with you feels like home.\n\nI just wanted you to know — you are seen, you are cherished, and you are deeply loved.\n\n${
-          safeSender ? `— ${safeSender}` : "— Your person ♡"
-        }`;
-
-    return { title, url, letter };
-  }, [occasion, headline, recipient, sender, message]);
-
-  const handlePhotosChange = (images: UploadResult[]) => {
-    const urls = images.map((image) => image.secure_url).filter(Boolean);
-    form.setValue("photos", urls, { shouldValidate: true });
-  };
-
-  const searchMusic = async () => {
-    const query = musicQuery.trim();
-    if (!query) return;
-
-    setIsSearchingMusic(true);
-    setMusicError("");
-    try {
-      const response = await fetch(
-        `/api/spotify/search?q=${encodeURIComponent(query)}`,
-      );
-      const data = await response.json();
-
-      if (!response.ok) {
-        setMusicResults([]);
-        setMusicError(data?.error || "Failed to search Spotify tracks");
-        return;
-      }
-
-      setMusicResults(data as SpotifyTrackResult[]);
-    } catch {
-      setMusicResults([]);
-      setMusicError("Could not search songs right now. Please try again.");
-    } finally {
-      setIsSearchingMusic(false);
-    }
-  };
-
-  const handlePreview = form.handleSubmit(async (values) => {
-    const payload = {
-      ...values,
-      // Ensure template goes to backend
-      template: values.template,
-      photos: values.photos ?? [],
-      music: values.music
-        ? {
-            track_id: values.music.track_id,
-            name: values.music.name,
-            artist_name: values.music.artist_name,
-            spotify_url: values.music.spotify_url,
-            album_image: values.music.album_image,
-          }
-        : null,
-    };
-
-    setIsSavingMoment(true);
-    setSaveError("");
-
-    try {
-      const response = await fetch("/api/moments", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        const errorMessage = data?.error || "Failed to save this moment";
-        toast.error(errorMessage);
-        setSaveError(errorMessage);
-        return;
-      }
-
-      setSavedMoment(data as CreatedMomentRecord);
-      setSuccessModalOpen(true);
-      toast.success("Moment message has been saved successful ❤️");
-    } catch {
-      const mess = "Could not save moment right now. Please try again.";
-      toast.error(mess);
-      setSaveError(mess);
-      return;
-    } finally {
-      setIsSavingMoment(false);
-    }
-  });
-
-  const selectTrack = (track: SpotifyTrackResult) => {
-    form.setValue(
-      "music",
-      {
-        track_id: track.trackId,
-        name: track.name,
-        artist_name: track.artist,
-        spotify_url: track.spotifyUrl ?? "",
-        album_image: track.albumImage,
-      },
-      { shouldValidate: true },
-    );
-  };
-
-  const getWhatsappLink = () => {
-    if (!recipient_phone || !/^\d{11}$/.test(recipient_phone) || !savedMoment)
-      return "";
-    const phone = "234" + recipient_phone.slice(1);
-    const baseUrl = "https://wa.me/" + phone;
-    let shareText = `I created something special for you`;
-
-    const momentUrl = `https://2usforever.vercel.app/for/${savedMoment.id}`;
-    shareText = `I created something special for you: ${momentUrl}`;
-    return `${baseUrl}?text=${encodeURIComponent(shareText)}`;
-  };
-
-  const generateMessage = async () => {
-    setIsGeneratingMessage(true);
-    try {
-      const response = await fetch("/api/gemini/generate-message", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ occasion }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        toast.error(data?.error || "Failed to generate message");
-        return;
-      }
-      form.setValue("message", data.message);
-      toast.success("Generated love message");
-    } catch (error) {
-      toast.error(String(error));
-    } finally {
-      setIsGeneratingMessage(false);
-    }
-  };
-
-  const improveMessage = async () => {
-    const currentMessage = form.getValues("message");
-    if (!currentMessage?.trim()) {
-      toast.error("Write a message first, then I can improve it");
-      return;
-    }
-    setIsImprovingMessage(true);
-    try {
-      const response = await fetch("/api/gemini/improve-message", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ occasion, message: currentMessage }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        toast.error(data?.error || "Failed to improve message");
-        return;
-      }
-      form.setValue("message", data.message);
-      toast.success("Message improved");
-    } catch (error) {
-      toast.error(String(error));
-    } finally {
-      setIsImprovingMessage(false);
-    }
-  };
-
-  const goNext = async () => {
-    if (step === 1) {
-      const valid = await form.trigger(["recipient"]);
-      if (!valid) return;
-    }
-    if (step === 5) {
-      // validate template selection on template step before moving on
-      const valid = await form.trigger("template");
-      if (!valid) return;
-    }
-    setStep((s) => Math.min(s + 1, TOTAL_STEPS));
-  };
-
-  const goBack = () => setStep((s) => Math.max(s - 1, 1));
+  const {
+    TEMPLATES,
+    form,
+    step,
+    goNext,
+    goBack,
+    occasion,
+    recipient,
+    message,
+    selectedMusic,
+    photos,
+    recipientPhone,
+    selectedTemplate,
+    scheduledDate,
+    deliveryTiming,
+    setImmediateDelivery,
+    setScheduledDelivery,
+    preview,
+    handlePhotosChange,
+    isMusicModalOpen,
+    setIsMusicModalOpen,
+    musicQuery,
+    setMusicQuery,
+    musicResults,
+    isSearchingMusic,
+    musicError,
+    searchMusic,
+    selectTrack,
+    handleSave,
+    isSavingMoment,
+    saveError,
+    savedMoment,
+    successModalOpen,
+    setSuccessModalOpen,
+    generateMessage,
+    improveMessage,
+    isGeneratingMessage,
+    isImprovingMessage,
+    whatsappLink,
+    scrollerRef,
+    showLeft,
+    showRight,
+    updateFades,
+    nudge,
+  } = useCreateMomentBuilder();
 
   return (
-    <section className="builder-section" id="create">
-      <div className="builder-inner">
+    <section className="builder-section overflow-x-hidden" id="create">
+      <div className="builder-inner min-w-0">
         <h2 className="builder-title">Create your moment ✨</h2>
         <p className="builder-sub">
           Follow the steps below to build your love page.
         </p>
 
-        {/* Step indicator */}
-        <div className="flex items-start justify-center mb-10">
-          {STEP_LABELS.map((label, i) => {
+        {/* Mobile progress bar */}
+        <div className="mb-6 sm:hidden">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <p className="text-xs font-medium text-[#1A0810]">
+              {BUILDER_STEP_LABELS[step - 1]}
+            </p>
+            <p className="shrink-0 text-[11px] text-[#A88090]">
+              {step} / {BUILDER_TOTAL_STEPS}
+            </p>
+          </div>
+          <div
+            className="h-2 w-full overflow-hidden rounded-full bg-[rgba(184,67,90,0.12)]"
+            role="progressbar"
+            aria-valuenow={step}
+            aria-valuemin={1}
+            aria-valuemax={BUILDER_TOTAL_STEPS}
+            aria-label={`Step ${step} of ${BUILDER_TOTAL_STEPS}`}
+          >
+            <div
+              className="h-full rounded-full bg-[#B8435A] transition-all duration-300 ease-out"
+              style={{ width: `${(step / BUILDER_TOTAL_STEPS) * 100}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Step indicator — desktop/tablet only */}
+        <div className="mb-6 hidden max-w-full items-start justify-center sm:mb-10 sm:flex">
+          {BUILDER_STEP_LABELS.map((label, i) => {
             const n = i + 1;
             const isActive = step === n;
             const isDone = step > n;
             return (
-              <div key={n} className="flex items-center">
+              <div key={n} className="flex shrink-0 items-center">
                 <div className="flex flex-col items-center gap-1.5">
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-semibold border-2 transition-all duration-200
+                    className={`flex h-7 w-7 items-center justify-center rounded-full border-2 text-xs font-semibold transition-all duration-200 sm:h-8 sm:w-8 sm:text-[13px]
                       ${
                         isActive
                           ? "bg-[#B8435A] border-[#B8435A] text-white shadow-sm"
@@ -423,9 +140,9 @@ export default function CreateMomentBuilder() {
                     {label}
                   </span>
                 </div>
-                {i < STEP_LABELS.length - 1 && (
+                {i < BUILDER_STEP_LABELS.length - 1 && (
                   <div
-                    className={`w-6 sm:w-10 h-px mx-1 mb-4 transition-all duration-200
+                    className={`mx-0.5 mb-4 h-px w-3 transition-all duration-200 sm:mx-1 sm:w-10
                       ${isDone ? "bg-[#B8435A]" : "bg-[rgba(184,67,90,0.15)]"}`}
                   />
                 )}
@@ -434,12 +151,40 @@ export default function CreateMomentBuilder() {
           })}
         </div>
 
-        {/* ── Step 1: Choose Occasion ── */}
+        {/* ── Step 1: You, occasion & recipient ── */}
         {step === 1 && (
           <div>
             <div className="form-row">
+              <label>Your name (feel free to use your pet name)</label>
+              <input
+                type="text"
+                {...form.register("sender")}
+                placeholder="e.g. Alex, Your love, Babe…"
+              />
+              {form.formState.errors.sender ? (
+                <p className="field-error">
+                  {form.formState.errors.sender.message}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="form-row">
+              <label>Your email</label>
+              <input
+                type="email"
+                {...form.register("sender_email")}
+                placeholder="your@email.com"
+              />
+              {form.formState.errors.sender_email ? (
+                <p className="field-error">
+                  {form.formState.errors.sender_email.message}
+                </p>
+              ) : null}
+            </div>
+
+            <div className="form-row">
               <label>What&apos;s the occasion?</label>
-              <div className="relative">
+              <div className="relative px-8 sm:px-0">
                 <div
                   className={`pointer-events-none absolute left-0 top-0 bottom-1 w-12 z-10 transition-opacity duration-200
                     bg-gradient-to-r from-[#FAF6F0] to-transparent rounded-l-2xl
@@ -449,11 +194,7 @@ export default function CreateMomentBuilder() {
                   type="button"
                   aria-label="Scroll left"
                   onClick={() => nudge(-1)}
-                  className={`absolute left-[-10px] top-1/2 translate-y-[-60%] z-20
-                    w-7 h-7 rounded-full bg-[#7A1A2A] border-[1.5px] border-[rgba(184,67,90,0.2)]
-                    text-[#FAF6F0] text-sm flex items-center justify-center
-                    hover:bg-[#FAF6F0] hover:text-[#7A1A2A] hover:border-[#7A1A2A] cursor-pointer
-                    transition-all duration-150
+                  className={`absolute left-0 top-1/2 z-20 flex h-7 w-7 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-[1.5px] border-[rgba(184,67,90,0.2)] bg-[#7A1A2A] text-sm text-[#FAF6F0] transition-all duration-150 hover:border-[#7A1A2A] hover:bg-[#FAF6F0] hover:text-[#7A1A2A] sm:left-[-10px] sm:translate-y-[-60%]
                     ${showLeft ? "opacity-100" : "opacity-0 pointer-events-none"}`}
                 >
                   <ChevronLeft />
@@ -490,11 +231,7 @@ export default function CreateMomentBuilder() {
                   type="button"
                   aria-label="Scroll right"
                   onClick={() => nudge(1)}
-                  className={`absolute right-[-10px] top-1/2 translate-y-[-60%] z-20
-                    w-7 h-7 rounded-full bg-[#7A1A2A] border-[1.5px] border-[rgba(184,67,90,0.2)]
-                    text-[#FAF6F0] text-sm flex items-center justify-center
-                    hover:bg-[#FAF6F0] hover:text-[#7A1A2A] hover:border-[#7A1A2A] cursor-pointer
-                    transition-all duration-150
+                  className={`absolute right-0 top-1/2 z-20 flex h-7 w-7 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-[1.5px] border-[rgba(184,67,90,0.2)] bg-[#7A1A2A] text-sm text-[#FAF6F0] transition-all duration-150 hover:border-[#7A1A2A] hover:bg-[#FAF6F0] hover:text-[#7A1A2A] sm:right-[-10px] sm:translate-y-[-60%]
                     ${showRight ? "opacity-100" : "opacity-0 pointer-events-none"}`}
                 >
                   <ChevronRight />
@@ -503,11 +240,11 @@ export default function CreateMomentBuilder() {
             </div>
 
             <div className="form-row">
-              <label>Who is this for?</label>
+              <label>Who is this for? (feel free to use their pet name)</label>
               <input
                 type="text"
                 {...form.register("recipient")}
-                placeholder="e.g. Jessica, My love, Babe…"
+                placeholder="e.g. Jessica, My love, Babe, Bae…"
               />
               {form.formState.errors.recipient ? (
                 <p className="field-error">
@@ -531,10 +268,15 @@ export default function CreateMomentBuilder() {
         {step === 2 && (
           <div>
             <div className="form-row">
-              <div className="flex flex-wrap items-center gap-2 mb-2">
-                <label className="mb-0 mr-auto">
-                  Your message (or let AI help)
-                </label>
+              <label className="mb-2">Your message (or let AI help)</label>
+
+              <textarea
+                {...form.register("message")}
+                disabled={isGeneratingMessage || isImprovingMessage}
+                placeholder="Write from the heart. Even a few words are enough to start…"
+                style={{ minHeight: "180px" }}
+              />
+              <div className="flex flex-wrap items-center gap-2 my-2">
                 <button
                   type="button"
                   onClick={generateMessage}
@@ -562,11 +304,6 @@ export default function CreateMomentBuilder() {
                   Improve message
                 </button>
               </div>
-              <textarea
-                {...form.register("message")}
-                disabled={isGeneratingMessage || isImprovingMessage}
-                placeholder="Write from the heart. Even a few words are enough to start…"
-              />
             </div>
           </div>
         )}
@@ -649,7 +386,7 @@ export default function CreateMomentBuilder() {
           <div>
             <div className="form-row">
               <label>Choose a template</label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 min-[520px]:grid-cols-2">
                 {TEMPLATES.map((t) => {
                   const isSelected = selectedTemplate === t.id;
                   return (
@@ -662,7 +399,7 @@ export default function CreateMomentBuilder() {
                           shouldValidate: true,
                         })
                       }
-                      className={`p-4 rounded-xl border-2 text-left transition-all duration-200
+                      className={`p-4 cursor-pointer rounded-xl border-2 text-left transition-all duration-200
                         ${
                           isSelected
                             ? "border-[#B8435A] bg-[rgba(184,67,90,0.04)]"
@@ -719,18 +456,120 @@ export default function CreateMomentBuilder() {
                   {TEMPLATES.find((t) => t.id === selectedTemplate)?.name}
                 </p>
               )}
+              {deliveryTiming === "scheduled" && scheduledDate ? (
+                <p className="preview-music">Opens on: {scheduledDate}</p>
+              ) : null}
             </div>
 
             <div className="form-row">
-              <label>Your email</label>
-              <input
-                type="email"
-                {...form.register("sender_email")}
-                placeholder="your@email.com"
-              />
-              {form.formState.errors.sender_email ? (
-                <p className="field-error">
-                  {form.formState.errors.sender_email.message}
+              <Label className="mb-3 block text-[#1A0810] font-medium">
+                When should they see this?{" "}
+                <span className="font-normal text-[#A88090]">(optional)</span>
+              </Label>
+
+              <RadioGroup
+                value={deliveryTiming}
+                onValueChange={(value) => {
+                  if (value === "immediate") setImmediateDelivery();
+                  if (value === "scheduled") setScheduledDelivery();
+                }}
+                className="grid grid-cols-2 gap-2 sm:gap-3"
+              >
+                <label
+                  htmlFor="delivery-immediate"
+                  className={cn(
+                    "flex min-h-[5.5rem] cursor-pointer flex-col items-center justify-center gap-1.5 rounded-2xl border-2 bg-white px-2 py-3 text-center transition-all duration-200 sm:min-h-0 sm:items-stretch sm:justify-start sm:gap-2 sm:p-4 sm:text-left",
+                    deliveryTiming === "immediate"
+                      ? "border-[#B8435A] bg-[rgba(184,67,90,0.04)] shadow-sm"
+                      : "border-[rgba(184,67,90,0.15)] hover:border-[rgba(184,67,90,0.35)] active:border-[rgba(184,67,90,0.35)]",
+                  )}
+                >
+                  <div className="flex flex-col items-center gap-1.5 sm:w-full sm:flex-row sm:items-center sm:gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <RadioGroupItem
+                        value="immediate"
+                        id="delivery-immediate"
+                        className="shrink-0 border-[rgba(184,67,90,0.35)] data-checked:border-[#B8435A] data-checked:bg-[#B8435A]"
+                      />
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[rgba(184,67,90,0.08)] text-[#B8435A] sm:h-7 sm:w-7">
+                        <Zap className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+                      </span>
+                    </div>
+                    <span className="text-xs font-medium leading-tight text-[#1A0810] sm:text-sm">
+                      Right away
+                    </span>
+                  </div>
+                  <p className="hidden text-xs leading-relaxed text-[#A88090] sm:block">
+                    Open as soon as you share the link.
+                  </p>
+                </label>
+                <label
+                  htmlFor="delivery-scheduled"
+                  className={cn(
+                    "flex min-h-[5.5rem] cursor-pointer flex-col items-center justify-center gap-1.5 rounded-2xl border-2 bg-white px-2 py-3 text-center transition-all duration-200 sm:min-h-0 sm:items-stretch sm:justify-start sm:gap-2 sm:p-4 sm:text-left",
+                    deliveryTiming === "scheduled"
+                      ? "border-[#B8435A] bg-[rgba(184,67,90,0.04)] shadow-sm"
+                      : "border-[rgba(184,67,90,0.15)] hover:border-[rgba(184,67,90,0.35)] active:border-[rgba(184,67,90,0.35)]",
+                  )}
+                >
+                  <div className="flex flex-col items-center gap-1.5 sm:w-full sm:flex-row sm:items-center sm:gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <RadioGroupItem
+                        value="scheduled"
+                        id="delivery-scheduled"
+                        className="shrink-0 border-[rgba(184,67,90,0.35)] data-checked:border-[#B8435A] data-checked:bg-[#B8435A]"
+                      />
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[rgba(184,67,90,0.08)] text-[#B8435A] sm:h-7 sm:w-7">
+                        <CalendarDays className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+                      </span>
+                    </div>
+                    <span className="text-xs font-medium leading-tight text-[#1A0810] sm:text-sm">
+                      <span className="sm:hidden">Schedule</span>
+                      <span className="hidden sm:inline">Pick a date</span>
+                    </span>
+                  </div>
+                  <p className="hidden text-xs leading-relaxed text-[#A88090] sm:block">
+                    Unlocks at midnight on the chosen day.
+                  </p>
+                </label>
+              </RadioGroup>
+
+              {deliveryTiming === "scheduled" ? (
+                <div
+                  className="mt-3 overflow-hidden rounded-2xl border border-[rgba(184,67,90,0.18)] bg-[#FAF6F0] p-4"
+                  style={{ animation: "fadeUp 0.35s ease both" }}
+                >
+                  <Label
+                    htmlFor="scheduled_date"
+                    className="mb-2 block text-[11px] font-medium uppercase tracking-[0.18em] text-[#A88090]"
+                  >
+                    Pick a date
+                  </Label>
+                  <input
+                    id="scheduled_date"
+                    type="date"
+                    {...form.register("scheduled_date")}
+                    min={todayDateInputValue()}
+                    className="w-full rounded-xl border border-[rgba(184,67,90,0.18)] bg-white px-4 py-3 text-sm text-[#1A0810] outline-none transition-colors focus:border-[#B8435A]"
+                  />
+                  {scheduledDate ? (
+                    <p className="mt-3 text-xs text-[#6B4050]">
+                      Opens on{" "}
+                      <span className="font-medium text-[#B8435A]">
+                        {scheduledDate}
+                      </span>{" "}
+                      at midnight.
+                    </p>
+                  ) : (
+                    <p className="mt-3 text-xs text-[#A88090]">
+                      Choose when they should see your message.
+                    </p>
+                  )}
+                </div>
+              ) : null}
+              {form.formState.errors.scheduled_date ? (
+                <p className="field-error mt-2">
+                  {form.formState.errors.scheduled_date.message}
                 </p>
               ) : null}
             </div>
@@ -772,7 +611,7 @@ export default function CreateMomentBuilder() {
             <Button
               type="button"
               className="form-submit h-14"
-              onClick={handlePreview}
+              onClick={handleSave}
               disabled={isSavingMoment}
             >
               {isSavingMoment ? "Saving…" : "Save ✨"}
@@ -783,26 +622,26 @@ export default function CreateMomentBuilder() {
 
         {/* ── Step navigation ── */}
         <div
-          className={`flex mt-8 ${step > 1 ? "justify-between" : "justify-end"}`}
+          className={`mt-8 flex gap-3 ${step > 1 ? "justify-between" : "justify-end"}`}
         >
           {step > 1 ? (
             <Button
               type="button"
               variant="outline"
               onClick={goBack}
-              className="rounded-full px-6 py-5 border-[rgba(184,67,90,0.2)] text-[#6B4050] hover:border-[#B8435A] hover:text-[#B8435A] hover:bg-[rgba(184,67,90,0.04)] font-normal text-sm"
+              className="flex-1 rounded-full border-[rgba(184,67,90,0.2)] px-4 py-2 text-sm font-normal text-[#6B4050] hover:border-[#B8435A] hover:bg-[rgba(184,67,90,0.04)] hover:text-[#B8435A] sm:h-auto sm:flex-none sm:px-6"
             >
-              ← Back
+              Back
             </Button>
           ) : null}
 
-          {step < TOTAL_STEPS ? (
+          {step < BUILDER_TOTAL_STEPS ? (
             <Button
               type="button"
               onClick={goNext}
-              className="rounded-full px-6 py-5 bg-[#B8435A] hover:bg-[#7A1A2A] text-white font-medium text-sm border-0"
+              className="flex-1 rounded-full border-0 bg-[#B8435A] px-4 py-2 text-sm font-medium text-white hover:bg-[#7A1A2A] sm:h-auto sm:flex-none sm:px-6"
             >
-              Next →
+              Next
             </Button>
           ) : null}
         </div>
@@ -833,7 +672,7 @@ export default function CreateMomentBuilder() {
           </div>
 
           <div className="pt-5 grow pb-5">
-            <div className="flex gap-2 px-5 items-center mb-4">
+            <div className="mb-4 flex flex-col gap-2 px-4 sm:flex-row sm:items-center sm:px-5">
               <input
                 type="text"
                 value={musicQuery}
@@ -842,13 +681,13 @@ export default function CreateMomentBuilder() {
                 onKeyDown={(e) => {
                   if (e.key === "Enter") searchMusic();
                 }}
-                className="flex-1 px-4 py-[11px] grow border-[1.5px] border-[rgba(184,67,90,0.18)] rounded-xl text-[13px] font-['Jost'] bg-white text-[#1A0810] outline-none focus:border-[#B8435A] transition-colors placeholder:text-[#C0A0A8]"
+                className="w-full grow rounded-xl border-[1.5px] border-[rgba(184,67,90,0.18)] bg-white px-4 py-[11px] text-[13px] font-['Jost'] text-[#1A0810] outline-none transition-colors placeholder:text-[#C0A0A8] focus:border-[#B8435A]"
               />
               <Button
                 type="button"
                 onClick={searchMusic}
                 disabled={isSearchingMusic}
-                className="bg-[#B8435A] hover:bg-[#7A1A2A] py-5 text-white rounded-xl px-5 text-[13px] font-medium border-0 shrink-0 transition-colors"
+                className="w-full shrink-0 rounded-xl border-0 bg-[#B8435A] px-5 py-5 text-[13px] font-medium text-white transition-colors hover:bg-[#7A1A2A] sm:w-auto"
               >
                 {isSearchingMusic ? "…" : "Search"}
               </Button>
@@ -877,7 +716,7 @@ export default function CreateMomentBuilder() {
                     key={track.id}
                     type="button"
                     onClick={() => selectTrack(track)}
-                    className={`flex items-center gap-3 justify-between rounded-xl px-3 py-2.5 border-[1.5px] text-left transition-all w-full
+                    className={`flex cursor-pointer items-center gap-3 justify-between rounded-xl px-3 py-2.5 border-[1.5px] text-left transition-all w-full
                       ${
                         isActive
                           ? "border-[#B8435A] bg-[rgba(184,67,90,0.04)]"
@@ -938,7 +777,7 @@ export default function CreateMomentBuilder() {
                   type="button"
                   className="bg-[#B8435A] hover:bg-[#7A1A2A] text-white rounded-full px-7 text-[13px] font-medium border-0 transition-colors"
                 >
-                  {selectedMusic ? "Done — use this song ✓" : "Done"}
+                  Done
                 </Button>
               </DialogClose>
             </div>
@@ -948,7 +787,7 @@ export default function CreateMomentBuilder() {
 
       {/* ── Success modal ── */}
       <Dialog open={successModalOpen} onOpenChange={setSuccessModalOpen}>
-        <DialogContent className="p-0 max-w-[420px] overflow-hidden border border-[rgba(184,67,90,0.18)] rounded-[20px] bg-[#FAF6F0] shadow-xl gap-0">
+        <DialogContent className="max-h-[92dvh] w-[calc(100vw-1.5rem)] max-w-[420px] gap-0 overflow-hidden overflow-y-auto rounded-[20px] border border-[rgba(184,67,90,0.18)] bg-[#FAF6F0] p-0 shadow-xl sm:w-full">
           <div className="relative bg-[#7A1A2A] flex flex-col px-8 py-8 text-center">
             <div className="w-16 h-16 rounded-full border border-[rgba(196,149,58,0.45)] bg-[rgba(196,149,58,0.1)] flex items-center justify-center mx-auto mb-4 text-3xl">
               🌹
@@ -966,25 +805,25 @@ export default function CreateMomentBuilder() {
             <div className="absolute -bottom-px left-0 right-0 h-7 bg-[#FAF6F0] rounded-t-[50%] scale-x-[1.04]" />
           </div>
 
-          <div className="px-7 pt-7 pb-6">
+          <div className="px-5 pb-6 pt-7 sm:px-7">
             {savedMoment && (
               <>
                 <p className="text-[11px] font-medium tracking-[1.5px] uppercase text-[#A88090] mb-2">
                   Their private link
                 </p>
 
-                <div className="flex items-center gap-2.5 bg-white border border-[rgba(184,67,90,0.15)] rounded-xl px-3.5 py-3 mb-3">
+                <div className="mb-3 flex flex-col gap-2.5 rounded-xl border border-[rgba(184,67,90,0.15)] bg-white px-3.5 py-3 sm:flex-row sm:items-center">
                   <Link
                     href={`https://2usforever.vercel.app/for/${savedMoment.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-[13px] text-[#B8435A] break-all leading-snug flex-1 hover:underline"
+                    className="flex-1 break-all text-[13px] leading-snug text-[#B8435A] hover:underline"
                   >
                     https://2usforever.vercel.app/for/{savedMoment.id}
                   </Link>
                   <Button
                     size="sm"
-                    className="shrink-0 bg-[#B8435A] hover:bg-[#7A1A2A] text-white text-xs font-medium rounded-lg px-3.5 h-8 border-0"
+                    className="h-9 w-full shrink-0 rounded-lg border-0 bg-[#B8435A] px-3.5 text-xs font-medium text-white hover:bg-[#7A1A2A] sm:w-auto"
                     onClick={() => {
                       navigator.clipboard?.writeText(
                         `https://2usforever.vercel.app/for/${savedMoment.id}`,
@@ -995,9 +834,9 @@ export default function CreateMomentBuilder() {
                   </Button>
                 </div>
 
-                {recipient_phone && /^\d{11}$/.test(recipient_phone) && (
+                {recipientPhone && /^\d{11}$/.test(recipientPhone) && (
                   <Link
-                    href={getWhatsappLink()}
+                    href={whatsappLink}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2 w-full bg-[#F0EAE4] hover:bg-[#E8F5EC] border border-[rgba(184,67,90,0.15)] hover:border-[#25D366] rounded-xl py-3 text-sm font-medium text-[#1A0810] hover:text-[#1A3A1A] transition-all mb-4 no-underline"
@@ -1026,7 +865,7 @@ export default function CreateMomentBuilder() {
                 className="rounded-full bg-[#B8435A] py-5 hover:bg-[#7A1A2A] text-white font-medium text-sm px-5 border-0"
                 onClick={() => setSuccessModalOpen(false)}
               >
-                Create another →
+                Create another
               </Button>
             </DialogFooter>
           </div>

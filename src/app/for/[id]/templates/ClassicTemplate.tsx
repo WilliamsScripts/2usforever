@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useSyncExternalStore } from "react";
 import Image from "next/image";
-import { MomentData } from "../types";
+import type { MomentData } from "@/types/moment";
 
 const CHARS = ["♡", "♥", "♡", "♥", "♡"];
 const COLORS = [

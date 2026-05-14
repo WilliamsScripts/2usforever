@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useSyncExternalStore } from "react";
 import Image from "next/image";
-import { MomentData } from "../types";
+import type { MomentData } from "@/types/moment";
 
 // ── Star field: mix of warm-white and gold, with a few "giant" featured stars ──
 const STARS = Array.from({ length: 125 }, (_, i) => ({

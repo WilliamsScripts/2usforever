@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
-import { Resend } from "resend";
-import { EmailTemplate } from "@/components/email-template";
+import { sendMomentEmails } from "@/services/email.service";
+import { sendMomentWhatsapp } from "@/services/termii.service";
 
 const musicSchema = z.object({
   track_id: z.string().min(1),
@@ -24,9 +24,12 @@ const createMomentSchema = z.object({
   sender_email: z.string().trim().min(1),
   recipient_email: z.string().trim().max(120).optional().nullable(),
   recipient_phone: z.string().trim().length(11),
+  scheduled_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Use a valid date")
+    .optional()
+    .nullable(),
 });
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 function getSupabaseClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -73,6 +76,7 @@ export async function POST(request: NextRequest) {
         sender_email: payload.sender_email,
         recipient_email: payload.recipient_email ?? "",
         recipient_phone: payload.recipient_phone,
+        scheduled_date: payload.scheduled_date ?? null,
       })
       .select()
       .single();
@@ -85,25 +89,53 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data: emailData, error: emailError } = await resend.emails.send({
-      from: "2usforever <onboarding@resend.dev>",
-      to: ["williamscherechiwilliams@gmail.com"],
-      subject: "Hello world",
-      react: EmailTemplate({ firstName: "John" }),
-    });
+    const [{ senderResult, recipientResult }, whatsappResult] =
+      await Promise.all([
+        sendMomentEmails({
+          moment: data,
+          senderEmail: payload.sender_email,
+          recipientEmail: payload.recipient_email,
+        }),
+        sendMomentWhatsapp({
+          moment: data,
+          recipientPhone: payload.recipient_phone,
+        }),
+      ]);
 
-    if (emailError) {
-      console.log("error", emailError);
+    if (senderResult.error) {
+      console.log("sender email error", senderResult.error);
       return NextResponse.json(
         {
-          error: "Failed to create moment record",
-          details: emailError.message,
+          error: "Failed to send confirmation email",
+          details: senderResult.error.message,
         },
         { status: 500 },
       );
     }
 
-    return NextResponse.json({ data, emailData }, { status: 201 });
+    if (recipientResult?.error) {
+      console.warn("recipient email error", recipientResult.error);
+    }
+
+    if (whatsappResult === null) {
+      console.log("[termii whatsapp] not sent: no valid recipient phone");
+    } else if (!whatsappResult.ok) {
+      console.warn("[termii whatsapp] delivery failed", whatsappResult.error);
+    } else {
+      console.log("[termii whatsapp] delivery confirmed", whatsappResult.data);
+    }
+
+    return NextResponse.json(
+      {
+        data,
+        emailData: {
+          sender: senderResult.data,
+          recipient: recipientResult?.data ?? null,
+        },
+        whatsappData: whatsappResult?.ok ? whatsappResult.data : null,
+      },
+      { status: 201 },
+    );
   } catch (error) {
     return NextResponse.json(
       {

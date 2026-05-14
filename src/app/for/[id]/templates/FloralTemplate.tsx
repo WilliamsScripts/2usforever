@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useSyncExternalStore } from "react";
 import Image from "next/image";
-import { MomentData } from "../types";
+import type { MomentData } from "@/types/moment";
 
 const PETAL_COLORS = ["#FFB0C8", "#FFC5D3", "#FFA8BE", "#FFD0DD", "#F9A8BE"];
 const PETALS = Array.from({ length: 32 }, (_, i) => ({

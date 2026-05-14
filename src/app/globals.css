@@ -1017,13 +1017,38 @@ footer {
   .price-card-single { padding: 36px 24px; }
   .price-list-two-col { grid-template-columns: 1fr; }
   .price-amount-large { font-size: 52px; }
-  .builder-inner { padding: 36px 24px; }
+  .builder-inner {
+    padding: 28px 20px;
+    border-radius: 20px;
+  }
+  .builder-title { font-size: 26px; }
+  .builder-sub { font-size: 14px; margin-bottom: 28px; }
+  .form-row input,
+  .form-row textarea,
+  .form-row select {
+    font-size: 16px;
+    padding: 12px 14px;
+  }
+  .preview-box {
+    margin-top: 24px;
+    padding: 20px 18px;
+    border-radius: 16px;
+  }
+  .preview-box h4 { font-size: 18px; }
+  .preview-box .preview-letter { font-size: 14px; }
   footer { padding: 48px 24px 24px; }
   .footer-inner { flex-direction: column; }
   .create-section { padding: 64px 24px; }
   .testimonials { padding: 64px 24px; }
-  .builder-section { padding: 64px 24px; }
+  .builder-section { padding: 48px 16px; }
   .mockup-polaroids { display: none; }
+}
+
+@media (max-width: 480px) {
+  .builder-section { padding: 32px 12px; }
+  .builder-inner { padding: 24px 16px; border-radius: 18px; }
+  .builder-title { font-size: 24px; }
+  .pill { padding: 8px 14px; font-size: 13px; }
 }
 
 .dark {

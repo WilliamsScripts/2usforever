@@ -1,19 +1,10 @@
 "use client";
-import { ImagePlus, X, Upload, AlertCircle } from "lucide-react";
-import React, { useState, useRef, useCallback, useEffect } from "react";
-import { CloudinaryService, UploadResult } from "@/services/cloudinary.service";
-import { toast } from "sonner";
-import Image from "next/image";
 
-export interface ImageItem {
-  id: string;
-  file?: File;
-  url: string;
-  publicId?: string;
-  isUploading?: boolean;
-  uploadProgress?: number;
-  error?: string;
-}
+import { ImagePlus, X, Upload, AlertCircle } from "lucide-react";
+import React from "react";
+import Image from "next/image";
+import { useCloudinaryImagePicker } from "@/hooks/useCloudinaryImagePicker";
+import type { ImageItem, UploadResult } from "@/types/cloudinary";
 
 interface CustomImagePickerProps {
   maxImages?: number;
@@ -32,288 +23,24 @@ const CustomImagePicker: React.FC<CustomImagePickerProps> = ({
   className = "",
   error,
 }) => {
-  const [images, setImages] = useState<ImageItem[]>([]);
-  const [oldImages, setOldImages] = useState<ImageItem[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Initialize old images only once
-  useEffect(() => {
-    const processedImages = initialImages.map((url, index) => {
-      // Extract public ID from Cloudinary URL
-      const urlParts = url.split("/");
-      const lastPart = urlParts[urlParts.length - 1];
-      const publicId = lastPart.split(".")[0];
-
-      return {
-        id: `initial-${index}-${publicId}`,
-        url,
-        publicId,
-      };
-    });
-
-    setOldImages(processedImages);
-  }, [initialImages]);
-
-  const handleFileSelect = useCallback(
-    async (files: FileList | null) => {
-      if (!files) return;
-
-      const fileArray = Array.from(files);
-      const validFiles = fileArray.filter((file) => {
-        if (!file.type.startsWith("image/")) {
-          toast.error(`${file.name} is not a valid image file`);
-          return false;
-        }
-        if (file.size > 10 * 1024 * 1024) {
-          // 10MB limit
-          toast.error(`${file.name} is too large. Maximum size is 10MB`);
-          return false;
-        }
-        return true;
-      });
-
-      if (validFiles.length === 0) return;
-
-      const totalCurrentImages = images.length + oldImages.length;
-      const remainingSlots = maxImages - totalCurrentImages;
-      const filesToUpload = validFiles.slice(0, remainingSlots);
-
-      if (validFiles.length > remainingSlots) {
-        toast.warning(`Only ${remainingSlots} more images can be uploaded`);
-      }
-
-      // Create preview items for selected files
-      const newImageItems: ImageItem[] = filesToUpload.map((file) => ({
-        id: `temp-${Date.now()}-${Math.random()}`,
-        file,
-        url: URL.createObjectURL(file),
-        isUploading: true,
-        uploadProgress: 0,
-      }));
-
-      setImages((prev) => [...prev, ...newImageItems]);
-
-      try {
-        const uploadPromises = filesToUpload.map(async (file, index) => {
-          const tempId = newImageItems[index].id;
-
-          try {
-            const result = await CloudinaryService.uploadImage(
-              file,
-              folder,
-              (progress) => {
-                setImages((prev) =>
-                  prev.map((img) =>
-                    img.id === tempId
-                      ? { ...img, uploadProgress: progress.percentage }
-                      : img,
-                  ),
-                );
-              },
-            );
-
-            // Update the image item with upload result
-            setImages((prev) =>
-              prev.map((img) =>
-                img.id === tempId
-                  ? {
-                      ...img,
-                      url: result.secure_url,
-                      publicId: result.public_id,
-                      isUploading: false,
-                      uploadProgress: 100,
-                    }
-                  : img,
-              ),
-            );
-
-            return result;
-          } catch (error) {
-            // Handle upload error
-            setImages((prev) =>
-              prev.map((img) =>
-                img.id === tempId
-                  ? {
-                      ...img,
-                      isUploading: false,
-                      error:
-                        error instanceof Error
-                          ? error.message
-                          : "Upload failed",
-                    }
-                  : img,
-              ),
-            );
-            throw error;
-          }
-        });
-
-        const results = await Promise.allSettled(uploadPromises);
-        const successfulUploads = results
-          .filter(
-            (result): result is PromiseFulfilledResult<UploadResult> =>
-              result.status === "fulfilled",
-          )
-          .map((result) => result.value);
-
-        if (successfulUploads.length > 0) {
-          // Move successful uploads into oldImages so they are not shown twice
-          const uploadedImageItems: ImageItem[] = successfulUploads.map(
-            (r) => ({
-              id: `initial-${r.public_id}`,
-              url: r.secure_url,
-              publicId: r.public_id,
-            }),
-          );
-
-          // Append to oldImages (these are the canonical uploaded images)
-          setOldImages((prev) => [...prev, ...uploadedImageItems]);
-
-          // Remove uploaded items from the temporary `images` state to avoid duplicates
-          setImages((prev) =>
-            prev.filter(
-              (img) =>
-                !successfulUploads.some((s) => s.public_id === img.publicId),
-            ),
-          );
-
-          // Notify parent with previous oldImages + newly uploaded results
-          const allUploadedImages = [
-            ...oldImages.map((img) => ({
-              public_id: img.publicId!,
-              secure_url: img.url,
-              width: 0,
-              height: 0,
-              format: "jpg",
-              bytes: 0,
-            })),
-            ...successfulUploads,
-          ];
-
-          onImagesChange?.(allUploadedImages);
-          toast.success(
-            `${successfulUploads.length} image(s) uploaded successfully`,
-          );
-        }
-
-        const failedUploads = results.filter(
-          (result) => result.status === "rejected",
-        ).length;
-
-        if (failedUploads > 0) {
-          toast.error(`${failedUploads} image(s) failed to upload`);
-        }
-      } catch (error) {
-        console.error("Upload error:", error);
-        toast.error("Failed to upload images");
-      }
-    },
-    [images, oldImages, maxImages, folder, onImagesChange],
-  );
-
-  const handleDeleteOldImage = useCallback(
-    async (imageId: string, publicId?: string) => {
-      // Remove from local state immediately for better UX
-      setOldImages((prev) => prev.filter((img) => img.id !== imageId));
-
-      // If it has a publicId, delete from Cloudinary
-      if (publicId) {
-        try {
-          await CloudinaryService.deleteImage(publicId);
-          toast.success("Image deleted successfully");
-        } catch (error) {
-          console.error("Error deleting image:", error);
-          toast.error("Failed to delete image from server");
-        }
-      }
-
-      // Update parent component with remaining images
-      const remainingOldImages = oldImages.filter((img) => img.id !== imageId);
-      const allRemainingImages = [
-        ...remainingOldImages.map((img) => ({
-          public_id: img.publicId!,
-          secure_url: img.url,
-          width: 0,
-          height: 0,
-          format: "jpg",
-          bytes: 0,
-        })),
-        ...images
-          .filter((img) => img.publicId)
-          .map((img) => ({
-            public_id: img.publicId!,
-            secure_url: img.url,
-            width: 0,
-            height: 0,
-            format: "jpg",
-            bytes: 0,
-          })),
-      ];
-
-      onImagesChange?.(allRemainingImages);
-    },
-    [oldImages, images, onImagesChange],
-  );
-
-  const handleDeleteNewImage = useCallback(
-    async (imageId: string, publicId?: string) => {
-      // Remove from local state immediately for better UX
-      setImages((prev) => prev.filter((img) => img.id !== imageId));
-
-      // If it has a publicId, delete from Cloudinary
-      if (publicId) {
-        try {
-          await CloudinaryService.deleteImage(publicId);
-          toast.success("Image deleted successfully");
-        } catch (error) {
-          console.error("Error deleting image:", error);
-          toast.error("Failed to delete image from server");
-        }
-      }
-
-      // Update parent component with remaining images
-      const remainingNewImages = images.filter((img) => img.id !== imageId);
-      const allRemainingImages = [
-        ...oldImages.map((img) => ({
-          public_id: img.publicId!,
-          secure_url: img.url,
-          width: 0,
-          height: 0,
-          format: "jpg",
-          bytes: 0,
-        })),
-        ...remainingNewImages
-          .filter((img) => img.publicId)
-          .map((img) => ({
-            public_id: img.publicId!,
-            secure_url: img.url,
-            width: 0,
-            height: 0,
-            format: "jpg",
-            bytes: 0,
-          })),
-      ];
-
-      onImagesChange?.(allRemainingImages);
-    },
-    [images, oldImages, onImagesChange],
-  );
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    handleFileSelect(e.target.files);
-    // Reset input value to allow selecting the same file again
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
-  const totalImages = images.length + oldImages.length;
-  const canAddMore = totalImages < maxImages;
+  const {
+    images,
+    oldImages,
+    fileInputRef,
+    canAddMore,
+    handleInputChange,
+    handleDeleteOldImage,
+    handleDeleteNewImage,
+  } = useCloudinaryImagePicker({
+    maxImages,
+    folder,
+    initialImages,
+    onImagesChange,
+  });
 
   return (
     <div className={`space-y-4 ${className}`}>
       <div className="flex flex-wrap gap-2">
-        {/* Upload Button */}
         {canAddMore && (
           <ImageUploadButton
             ref={fileInputRef}
@@ -322,7 +49,6 @@ const CustomImagePicker: React.FC<CustomImagePickerProps> = ({
           />
         )}
 
-        {/* Old Image Previews */}
         {oldImages.map((image) => (
           <ImagePreview
             key={image.id}
@@ -331,7 +57,6 @@ const CustomImagePicker: React.FC<CustomImagePickerProps> = ({
           />
         ))}
 
-        {/* New Image Previews */}
         {images.map((image) => (
           <ImagePreview
             key={image.id}
@@ -357,13 +82,6 @@ interface ImagePreviewProps {
 }
 
 const ImagePreview: React.FC<ImagePreviewProps> = ({ image, onDelete }) => {
-  // For fallback image, we use onError and set src to a fallback (for Image component, fallback logic is more complex).
-  // We'll use a parent div to simulate this -- see note below.
-  const [showLarge, setShowLarge] = useState(false);
-
-  // Fallback support for Next/Image can be built in, but as per removal of "hover card",
-  // we will just show the 80x80px image, or a simple modal for large/zoom if desired, but requirement was only to remove hover card.
-
   return (
     <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-gray-200 hover:border-gray-300 transition-colors bg-gray-50">
       <Image
@@ -372,13 +90,8 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({ image, onDelete }) => {
         fill
         className="object-cover"
         sizes="128px"
-        onError={(e) => {
-          // No fallback image for Next.js Image by default, unless using a custom loader or local fallback;
-          // in practice, let it show as broken for now, or you can handle placeholder with extra state.
-        }}
       />
 
-      {/* Delete Button */}
       {!image.isUploading && (
         <button
           onClick={onDelete}
@@ -389,7 +102,6 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({ image, onDelete }) => {
         </button>
       )}
 
-      {/* Upload Progress Overlay */}
       {image.isUploading && (
         <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
           <div className="text-center">
@@ -401,7 +113,6 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({ image, onDelete }) => {
         </div>
       )}
 
-      {/* Error Overlay */}
       {image.error && (
         <div className="absolute inset-0 bg-red-500/90 flex items-center justify-center p-2">
           <div className="text-center">
@@ -438,7 +149,7 @@ const ImageUploadButton = React.forwardRef<
       <label
         htmlFor="image-upload"
         className={`
-          w-20 h-20 rounded-lg border-[1.5px] border-[#c8516a26] 
+          w-20 h-20 rounded-lg border-[1.5px] border-[#c8516a26]
           hover:border-[#C8516A] transition-colors cursor-pointer
           flex flex-col items-center relative justify-center gap-2
           bg-[#FDF8F5]

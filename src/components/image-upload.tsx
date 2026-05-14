@@ -1,9 +1,9 @@
 "use client";
-import { CloudinaryService } from "@/services/cloudinary.service";
-import { ImagePlus, Loader2 } from "lucide-react";
+
+import { Loader2, ImagePlus } from "lucide-react";
 import Image from "next/image";
-import React, { useCallback, useState } from "react";
-import { toast } from "sonner";
+import React from "react";
+import { useImageUpload } from "@/hooks/useImageUpload";
 
 interface ImageUploadProps {
   imageUrl?: string;
@@ -16,39 +16,10 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   onImageUpload,
   isUploadingApi,
 }) => {
-  const [image, setImage] = useState<string | undefined>(imageUrl);
-  const [isUploading, setIsUploading] = useState(false);
-
-  const handleImageUpload = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-
-      if (!file.type.startsWith("image/")) {
-        toast.error(`${file.name} is not a valid image file`);
-        return;
-      }
-      if (file.size > 10 * 1024 * 1024) {
-        // 10MB limit
-        toast.error(`${file.name} is too large. Maximum size is 10MB`);
-        return;
-      }
-
-      try {
-        setIsUploading(true);
-        const result = await CloudinaryService.uploadImage(file, "2usforever");
-        setImage(result.secure_url);
-        onImageUpload?.(result.secure_url);
-        toast.success("Image uploaded successfully");
-      } catch (error) {
-        console.error("Error uploading image:", error);
-        toast.error("Failed to upload image");
-      } finally {
-        setIsUploading(false);
-      }
-    },
-    [onImageUpload],
-  );
+  const { image, isUploading, handleImageUpload } = useImageUpload({
+    initialUrl: imageUrl,
+    onImageUpload,
+  });
 
   if (isUploading || isUploadingApi) {
     return (

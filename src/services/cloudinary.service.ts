@@ -1,24 +1,7 @@
-// Client-side Cloudinary service - no server-side SDK needed
-
-export interface UploadResult {
-  public_id: string;
-  secure_url: string;
-  width: number;
-  height: number;
-  format: string;
-  bytes: number;
-}
-
-export interface UploadProgress {
-  loaded: number;
-  total: number;
-  percentage: number;
-}
+import { apiRequest } from "@/lib/api-client";
+import type { UploadProgress, UploadResult } from "@/types/cloudinary";
 
 export class CloudinaryService {
-  /**
-   * Upload a single image to Cloudinary
-   */
   static async uploadImage(
     file: File,
     folder?: string,
@@ -39,15 +22,13 @@ export class CloudinaryService {
 
       const xhr = new XMLHttpRequest();
 
-      // Track upload progress
       xhr.upload.addEventListener("progress", (event) => {
         if (event.lengthComputable && onProgress) {
-          const progress: UploadProgress = {
+          onProgress({
             loaded: event.loaded,
             total: event.total,
             percentage: Math.round((event.loaded / event.total) * 100),
-          };
-          onProgress(progress);
+          });
         }
       });
 
@@ -63,8 +44,7 @@ export class CloudinaryService {
               format: response.format,
               bytes: response.bytes,
             });
-          } catch (error) {
-            console.error("Error parsing upload response:", error);
+          } catch {
             reject(new Error("Failed to parse upload response"));
           }
         } else {
@@ -84,51 +64,32 @@ export class CloudinaryService {
     });
   }
 
-  /**
-   * Upload multiple images concurrently
-   */
   static async uploadMultipleImages(
     files: File[],
     folder?: string,
     onProgress?: (fileIndex: number, progress: UploadProgress) => void,
   ): Promise<UploadResult[]> {
-    const uploadPromises = files.map((file, index) =>
-      this.uploadImage(file, folder, (progress) =>
-        onProgress?.(index, progress),
+    return Promise.all(
+      files.map((file, index) =>
+        this.uploadImage(file, folder, (progress) =>
+          onProgress?.(index, progress),
+        ),
       ),
     );
-
-    return Promise.all(uploadPromises);
   }
 
-  /**
-   * Delete an image from Cloudinary via API route
-   */
   static async deleteImage(publicId: string): Promise<boolean> {
-    try {
-      const response = await fetch("/api/cloudinary/delete", {
+    const result = await apiRequest<{ success: boolean }>(
+      "/api/cloudinary/delete",
+      {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ publicId }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to delete image: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      return result.success;
-    } catch (error) {
-      console.error("Error deleting image:", error);
-      return false;
-    }
+      },
+    );
+    return result.success;
   }
 
-  /**
-   * Get optimized image URL with transformations
-   */
   static getOptimizedUrl(
     publicId: string,
     transformations?: {
@@ -147,7 +108,7 @@ export class CloudinaryService {
     let url = `https://res.cloudinary.com/${cloudName}/image/upload`;
 
     if (transformations) {
-      const transformParams = [];
+      const transformParams: string[] = [];
       if (transformations.width)
         transformParams.push(`w_${transformations.width}`);
       if (transformations.height)
