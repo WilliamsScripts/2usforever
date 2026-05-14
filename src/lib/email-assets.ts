@@ -1,5 +1,9 @@
-const baseUrl = process.env.NEXT_PUBLIC_APP_URL
-  ? `https://${process.env.NEXT_PUBLIC_APP_URL}`
-  : "";
+import "server-only";
 
-export const WHATSAPP_LOGO_SRC = `${baseUrl}/static/whatsapp-logo.png`;
+function getAppBaseUrl(): string {
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://2usforever.vercel.app";
+  return baseUrl.replace(/\/$/, "");
+}
+
+export const WHATSAPP_LOGO_SRC = `${getAppBaseUrl()}/whatsapp-logo.png`;
