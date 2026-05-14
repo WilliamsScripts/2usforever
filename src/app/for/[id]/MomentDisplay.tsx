@@ -30,6 +30,7 @@ export default function MomentDisplay({ data }: { data: MomentRecord }) {
         scheduledDate={data.scheduled_date}
         recipient={data.recipient}
         headline={data.headline}
+        template={data.template}
         onUnlocked={handleUnlocked}
       />
     );

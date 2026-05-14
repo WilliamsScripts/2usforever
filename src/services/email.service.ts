@@ -14,6 +14,18 @@ function getMomentUrl(momentId: string): string {
   return `${baseUrl.replace(/\/$/, "")}/for/${momentId}`;
 }
 
+function getTimelineUrl(): string {
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://2usforever.vercel.app";
+  return `${baseUrl.replace(/\/$/, "")}/timeline/login`;
+}
+
+function getCreateMomentUrl(): string {
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://2usforever.vercel.app";
+  return `${baseUrl.replace(/\/$/, "")}/create-moment`;
+}
+
 type SendMomentEmailsInput = {
   moment: MomentRecord;
   senderEmail: string;
@@ -31,6 +43,8 @@ export async function sendMomentEmails({
     senderName: moment.sender,
     occasion: moment.occasion ?? "Love Note",
     momentUrl,
+    timelineUrl: getTimelineUrl(),
+    createMomentUrl: getCreateMomentUrl(),
     scheduledDate: moment.scheduled_date,
     headline: moment.headline,
     recipientPhone: moment.recipient_phone,

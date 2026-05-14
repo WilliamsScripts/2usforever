@@ -2,6 +2,8 @@ import type { SenderConfirmationEmailProps } from "@/types/email";
 import {
   EmailButton,
   EmailLayout,
+  EmailSecondaryButton,
+  EmailUpsellBox,
   WhatsAppButton,
   emailColors,
   formatScheduledLabel,
@@ -12,6 +14,8 @@ export function SenderConfirmationEmail({
   recipientName,
   occasion,
   momentUrl,
+  timelineUrl,
+  createMomentUrl,
   scheduledDate,
   recipientPhone,
 }: SenderConfirmationEmailProps) {
@@ -38,6 +42,7 @@ export function SenderConfirmationEmail({
       </p>
 
       <EmailButton href={momentUrl} label="View" />
+      <EmailSecondaryButton href={timelineUrl} label="See your timeline" />
       {recipientPhone && momentUrl && (
         <WhatsAppButton
           href={buildWhatsappShareUrl(
@@ -60,6 +65,13 @@ export function SenderConfirmationEmail({
           ? `Their page unlocks at midnight on ${scheduledLabel}.`
           : "They can open it as soon as you share the link."}
       </p>
+
+      <EmailUpsellBox
+        title="Keep the love going"
+        body="Create another beautiful moment in minutes — a birthday surprise, anniversary note, or just because."
+        ctaHref={createMomentUrl}
+        ctaLabel="Create a moment now"
+      />
     </EmailLayout>
   );
 }

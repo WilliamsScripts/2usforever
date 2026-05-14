@@ -206,6 +206,99 @@ export function EmailButton({ href, label }: { href: string; label: string }) {
   );
 }
 
+export function EmailSecondaryButton({
+  href,
+  label,
+}: {
+  href: string;
+  label: string;
+}) {
+  return (
+    <table
+      role="presentation"
+      cellPadding={0}
+      cellSpacing={0}
+      style={{ margin: "8px auto 0" }}
+    >
+      <tbody>
+        <tr>
+          <td
+            style={{
+              borderRadius: 999,
+              backgroundColor: emailColors.blush,
+              border: `1px solid ${emailColors.border}`,
+            }}
+          >
+            <a
+              href={href}
+              style={{
+                display: "inline-block",
+                padding: "14px 28px",
+                fontSize: 14,
+                fontWeight: 500,
+                color: emailColors.textDark,
+                textDecoration: "none",
+                letterSpacing: "0.02em",
+              }}
+            >
+              {label}
+            </a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  );
+}
+
+export function EmailUpsellBox({
+  title,
+  body,
+  ctaHref,
+  ctaLabel,
+}: {
+  title: string;
+  body: string;
+  ctaHref: string;
+  ctaLabel: string;
+}) {
+  return (
+    <div
+      style={{
+        margin: "28px 0 0",
+        padding: "20px 22px",
+        borderRadius: 16,
+        backgroundColor: emailColors.ivory,
+        border: `1px solid ${emailColors.border}`,
+        textAlign: "center",
+      }}
+    >
+      <p
+        style={{
+          margin: "0 0 8px",
+          fontFamily:
+            "'Cormorant Garamond', Georgia, 'Times New Roman', serif",
+          fontSize: 24,
+          lineHeight: 1.2,
+          color: emailColors.textDark,
+        }}
+      >
+        {title}
+      </p>
+      <p
+        style={{
+          margin: "0 0 4px",
+          fontSize: 14,
+          lineHeight: 1.7,
+          color: emailColors.textMid,
+        }}
+      >
+        {body}
+      </p>
+      <EmailButton href={ctaHref} label={ctaLabel} />
+    </div>
+  );
+}
+
 export function WhatsAppButton({
   href,
   label,

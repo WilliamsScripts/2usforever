@@ -2,6 +2,8 @@ import type { RecipientMomentEmailProps } from "@/types/email";
 import {
   EmailButton,
   EmailLayout,
+  EmailSecondaryButton,
+  EmailUpsellBox,
   emailColors,
   formatScheduledLabel,
 } from "./email-layout";
@@ -11,6 +13,8 @@ export function RecipientMomentEmail({
   senderName,
   occasion,
   momentUrl,
+  timelineUrl,
+  createMomentUrl,
   scheduledDate,
   headline,
 }: RecipientMomentEmailProps) {
@@ -89,6 +93,7 @@ export function RecipientMomentEmail({
         href={momentUrl}
         label={scheduledLabel ? "See what's coming" : "Open your moment"}
       />
+      <EmailSecondaryButton href={timelineUrl} label="See your timeline" />
 
       <p
         style={{
@@ -103,6 +108,13 @@ export function RecipientMomentEmail({
           ? "The full message unlocks at midnight on the date above."
           : "This link was made just for you. Take your time."}
       </p>
+
+      <EmailUpsellBox
+        title="Reply with your own moment"
+        body="Surprise someone you love with a private page of your own — photos, music, and words from the heart."
+        ctaHref={createMomentUrl}
+        ctaLabel="Create a moment now"
+      />
     </EmailLayout>
   );
 }
