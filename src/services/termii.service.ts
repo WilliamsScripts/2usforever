@@ -24,12 +24,14 @@ export function isValidLocalPhone(phone: string | null | undefined): boolean {
   return Boolean(phone?.trim() && /^\d{11}$/.test(phone.trim()));
 }
 
-function buildRecipientWhatsappMessage(moment: MomentRecord, momentUrl: string) {
+function buildRecipientWhatsappMessage(
+  moment: MomentRecord,
+  momentUrl: string,
+) {
   const recipientName = moment.recipient?.trim() || "there";
   const senderName = moment.sender?.trim() || "Someone special";
-  const occasion = moment.occasion?.trim() || "a love note";
 
-  return `Hi ${recipientName},\n\n${senderName} made something special for you — a private ${occasion.toLowerCase()} on 2UsForever.\n\nOpen it here: ${momentUrl}`;
+  return `Hi ${recipientName},\n\n${senderName} made a private special page for you on 2UsForever.\n\nOpen it here: ${momentUrl}`;
 }
 
 export async function sendWhatsappMessage(

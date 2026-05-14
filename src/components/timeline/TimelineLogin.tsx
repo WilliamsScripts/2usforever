@@ -1,34 +1,28 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { toast } from "sonner";
 import { TimelineFrame } from "@/components/timeline/TimelineFrame";
-import { sendMagicLink } from "@/services/timeline.service";
+import { useTimelineLogin } from "@/hooks/useTimelineLogin";
 
 export function TimelineLogin() {
   const searchParams = useSearchParams();
-  const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
-  const [loading, setLoading] = useState(false);
   const next = searchParams.get("next") ?? "/timeline";
   const authError = searchParams.get("error") === "auth";
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setLoading(true);
-
-    try {
-      await sendMagicLink(email, next);
-      setSent(true);
-      toast.success("Check your inbox for the magic link");
-    } catch {
-      toast.error("Could not send magic link. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    step,
+    email,
+    setEmail,
+    code,
+    setCode,
+    isSending,
+    isVerifying,
+    handleSendCode,
+    handleVerifyCode,
+    handleResend,
+    resetToEmailStep,
+  } = useTimelineLogin(next);
 
   return (
     <TimelineFrame>
@@ -37,32 +31,69 @@ export function TimelineLogin() {
         <h1 className="timeline-title">Your timeline awaits</h1>
         <p className="timeline-subtitle">
           Sign in with the same email you used when creating or receiving a
-          moment. We&apos;ll send you a magic link — no password needed.
+          moment. We&apos;ll email you a one-time code - no password needed.
         </p>
 
         {authError ? (
           <p className="timeline-login-error" role="alert">
-            That sign-in link expired or was invalid. Request a new one below.
+            That sign-in session expired. Enter your email and request a new
+            code below.
           </p>
         ) : null}
 
-        {sent ? (
-          <div className="timeline-login-sent">
-            <p className="timeline-login-sent-title">Magic link sent</p>
-            <p>
-              We emailed <strong>{email}</strong>. Open the link on this device
-              to view your timeline.
-            </p>
+        {step === "code" ? (
+          <form onSubmit={handleVerifyCode} className="timeline-login-form">
+            <div className="timeline-login-sent">
+              <p className="timeline-login-sent-title">Enter your code</p>
+              <p>
+                We sent a 6-digit code to <strong>{email}</strong>.
+              </p>
+            </div>
+            <label className="timeline-field">
+              <span>Sign-in code</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                value={code}
+                onChange={(e) =>
+                  setCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+                }
+                className="timeline-input timeline-otp-input"
+                placeholder="000000"
+                required
+                minLength={6}
+                maxLength={6}
+                pattern="\d{6}"
+              />
+            </label>
             <button
-              type="button"
-              className="timeline-retry"
-              onClick={() => setSent(false)}
+              type="submit"
+              className="timeline-login-submit"
+              disabled={isVerifying || code.length !== 6}
             >
-              Use a different email
+              {isVerifying ? "Verifying…" : "Sign in"}
             </button>
-          </div>
+            <div className="timeline-login-actions">
+              <button
+                type="button"
+                className="timeline-retry"
+                onClick={handleResend}
+                disabled={isSending}
+              >
+                Resend code
+              </button>
+              <button
+                type="button"
+                className="timeline-retry timeline-retry--ghost"
+                onClick={resetToEmailStep}
+              >
+                Use a different email
+              </button>
+            </div>
+          </form>
         ) : (
-          <form onSubmit={handleSubmit} className="timeline-login-form">
+          <form onSubmit={handleSendCode} className="timeline-login-form">
             <label className="timeline-field">
               <span>Email address</span>
               <input
@@ -75,8 +106,12 @@ export function TimelineLogin() {
                 autoComplete="email"
               />
             </label>
-            <button type="submit" className="timeline-login-submit" disabled={loading}>
-              {loading ? "Sending…" : "Send magic link"}
+            <button
+              type="submit"
+              className="timeline-login-submit"
+              disabled={isSending}
+            >
+              {isSending ? "Sending…" : "Send sign-in code"}
             </button>
           </form>
         )}

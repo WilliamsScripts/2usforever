@@ -6,7 +6,7 @@ import { createPageMetadata } from "@/lib/seo";
 export const metadata: Metadata = createPageMetadata({
   title: "Sign In to Your Timeline",
   description:
-    "Sign in with your email to view your private timeline of sent and received love moments on 2UsForever.",
+    "Sign in with a one-time email code to view your private timeline of sent and received love moments on 2UsForever.",
   path: "/timeline/login",
   noIndex: true,
 });

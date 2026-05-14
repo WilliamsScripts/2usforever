@@ -1510,6 +1510,26 @@ footer {
   color: var(--text-dark);
 }
 
+.timeline-otp-input {
+  text-align: center;
+  letter-spacing: 0.35em;
+  font-size: 1.25rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.timeline-login-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.timeline-retry--ghost {
+  background: transparent;
+  color: var(--text-mid);
+  border: 1px solid rgba(200, 81, 106, 0.2);
+}
+
 @media (min-width: 768px) {
   .timeline-card {
     grid-template-columns: 1fr auto 1fr;

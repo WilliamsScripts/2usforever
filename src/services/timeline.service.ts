@@ -25,17 +25,3 @@ export async function deleteTimelineMoment(id: string) {
     method: "DELETE",
   });
 }
-
-export async function sendMagicLink(email: string, next?: string) {
-  return apiRequest<{ ok: true }>("/api/auth/magic-link", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, next }),
-  });
-}
-
-export async function signOut() {
-  return apiRequest<{ ok: true }>("/api/auth/signout", {
-    method: "POST",
-  });
-}

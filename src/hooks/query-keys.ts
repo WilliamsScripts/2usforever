@@ -6,6 +6,9 @@ export const queryKeys = {
   timeline: {
     all: ["timeline"] as const,
   },
+  auth: {
+    all: ["auth"] as const,
+  },
   spotify: {
     search: (query: string) => ["spotify", "search", query] as const,
   },
