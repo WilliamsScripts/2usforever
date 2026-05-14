@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { getRequestOrigin } from "@/lib/supabase/env";
 import { createClient } from "@/lib/supabase/server";
 
 const magicLinkSchema = z.object({
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest) {
     const nextPath = parsed.data.next?.startsWith("/")
       ? parsed.data.next
       : "/timeline";
-    const origin = request.nextUrl.origin;
+    const origin = getRequestOrigin(request);
     const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent(nextPath)}`;
 
     const { error } = await supabase.auth.signInWithOtp({
