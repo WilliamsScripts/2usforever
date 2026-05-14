@@ -1,5 +1,6 @@
 "use client";
 
+import { useRequireAuth } from "@/lib/auth/protected-route";
 import { TimelineFrame } from "@/components/timeline/TimelineFrame";
 import { TimelineCard } from "@/components/timeline/TimelineCard";
 import { EditMomentDialog } from "@/components/timeline/EditMomentDialog";
@@ -7,6 +8,7 @@ import { DeleteMomentDialog } from "@/components/timeline/DeleteMomentDialog";
 import { useTimelineDashboard } from "@/hooks/useTimelineDashboard";
 
 export function TimelineDashboard() {
+  const { isLoading: isAuthLoading } = useRequireAuth();
   const {
     email,
     moments,
@@ -24,6 +26,17 @@ export function TimelineDashboard() {
     handleSaveMoment,
     handleDeleteMoment,
   } = useTimelineDashboard();
+
+  if (isAuthLoading) {
+    return (
+      <TimelineFrame>
+        <div className="timeline-state">
+          <div className="timeline-loader" aria-hidden />
+          <p>Checking your session…</p>
+        </div>
+      </TimelineFrame>
+    );
+  }
 
   return (
     <TimelineFrame email={email} onSignOut={handleSignOut}>

@@ -7,8 +7,10 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-cormorant: var(--font-cormorant);
+  --font-playfair: var(--font-playfair);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -96,6 +98,10 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --font-geist-sans: "Geist", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-geist-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-cormorant: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  --font-playfair: "Playfair Display", Georgia, "Times New Roman", serif;
 }
 
 html { scroll-behavior: smooth; }
@@ -1083,11 +1089,6 @@ footer {
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
-}
-
-@theme inline {
-  --font-cormorant: var(--font-cormorant);
-  --font-playfair: var(--font-playfair);
 }
 
 @layer base {

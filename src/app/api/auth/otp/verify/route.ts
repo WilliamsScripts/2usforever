@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { mapSupabaseAuthError } from "@/lib/auth/errors";
 import { createCallbackClient } from "@/lib/supabase/server";
+import type { AuthApiErrorBody } from "@/types/auth";
 
 const verifyOtpSchema = z.object({
   email: z.string().trim().email("Enter a valid email"),
@@ -18,15 +20,28 @@ function safeNextPath(value: string | undefined) {
   return value;
 }
 
+function errorResponse(
+  message: string,
+  status: number,
+  code: AuthApiErrorBody["code"],
+  details?: string,
+) {
+  return NextResponse.json(
+    { error: message, code, details } satisfies AuthApiErrorBody,
+    { status },
+  );
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const parsed = verifyOtpSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Invalid code", issues: parsed.error.issues },
-        { status: 400 },
+      return errorResponse(
+        "Enter the 6-digit code from your email.",
+        400,
+        "INVALID_OTP",
       );
     }
 
@@ -41,20 +56,21 @@ export async function POST(request: NextRequest) {
     });
 
     if (error) {
-      return NextResponse.json(
-        { error: "Invalid or expired code", details: error.message },
-        { status: 401 },
+      const mapped = mapSupabaseAuthError(error.message);
+      return errorResponse(
+        mapped.message,
+        mapped.code === "RATE_LIMITED" ? 429 : 401,
+        mapped.code,
+        error.message,
       );
     }
 
     return response;
   } catch (error) {
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error ? error.message : "Unexpected server error",
-      },
-      { status: 500 },
+    return errorResponse(
+      error instanceof Error ? error.message : "Unexpected server error",
+      500,
+      "UNKNOWN",
     );
   }
 }

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useAuthContext } from "@/context/AuthProvider";
 import { useSignOut } from "@/hooks/useAuth";
 import {
   useDeleteTimelineMoment,
@@ -11,6 +12,7 @@ import {
 import type { TimelineMoment, UpdateTimelineMomentPayload } from "@/types/timeline";
 
 export function useTimelineDashboard() {
+  const { user, signOutLocal } = useAuthContext();
   const timelineQuery = useTimeline();
   const updateMutation = useUpdateTimelineMoment();
   const deleteMutation = useDeleteTimelineMoment();
@@ -33,6 +35,7 @@ export function useTimelineDashboard() {
   const handleSignOut = async () => {
     try {
       await signOutMutation.mutateAsync();
+      signOutLocal();
       window.location.href = "/timeline/login";
     } catch {
       toast.error("Could not sign out. Please try again.");
@@ -64,7 +67,7 @@ export function useTimelineDashboard() {
   };
 
   return {
-    email: timelineQuery.data?.email,
+    email: user?.email ?? timelineQuery.data?.email,
     moments,
     stats,
     isLoading: timelineQuery.isLoading,

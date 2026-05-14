@@ -2,11 +2,17 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/hooks/query-keys";
-import { sendOtp, signOut, verifyOtp } from "@/services/auth.service";
+import {
+  persistRememberDevice,
+  sendOtp,
+  signOut,
+  verifyOtp,
+} from "@/services/auth.service";
+import type { SendOtpPayload, VerifyOtpPayload } from "@/types/auth";
 
 export function useSendOtp() {
   return useMutation({
-    mutationFn: (email: string) => sendOtp(email),
+    mutationFn: (payload: SendOtpPayload) => sendOtp(payload),
   });
 }
 
@@ -14,17 +20,15 @@ export function useVerifyOtp() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      email,
-      token,
-      next,
-    }: {
-      email: string;
-      token: string;
-      next?: string;
-    }) => verifyOtp(email, token, next),
-    onSuccess: () => {
+    mutationFn: (payload: VerifyOtpPayload & { rememberDevice?: boolean }) =>
+      verifyOtp(payload),
+    onSuccess: (_data, variables) => {
+      if (variables.rememberDevice) {
+        persistRememberDevice(variables.email);
+      }
+
       queryClient.invalidateQueries({ queryKey: queryKeys.timeline.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.auth.all });
     },
   });
 }
@@ -36,6 +40,7 @@ export function useSignOut() {
     mutationFn: signOut,
     onSuccess: () => {
       queryClient.removeQueries({ queryKey: queryKeys.timeline.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.auth.all });
     },
   });
 }
