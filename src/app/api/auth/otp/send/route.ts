@@ -32,7 +32,11 @@ export async function POST(request: NextRequest) {
     const parsed = sendOtpSchema.safeParse(body);
 
     if (!parsed.success) {
-      return errorResponse("Enter a valid email address.", 400, "INVALID_EMAIL");
+      return errorResponse(
+        "Enter a valid email address.",
+        400,
+        "INVALID_EMAIL",
+      );
     }
 
     if (isCaptchaConfigured()) {
