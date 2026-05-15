@@ -92,18 +92,28 @@ export function TimelineDashboard() {
       ) : null}
 
       {!isLoading && !isError && moments.length > 0 ? (
-        <div className="timeline-feed">
-          <div className="timeline-line" aria-hidden />
-          {moments.map((moment, index) => (
-            <TimelineCard
-              key={moment.id}
-              moment={moment}
-              index={index}
-              onEdit={setEditing}
-              onDelete={setDeleting}
-            />
-          ))}
-        </div>
+        <section className="timeline-gallery" aria-label="Your moments">
+          <p className="timeline-gallery-hint">
+            Swipe through your love story
+            <span className="timeline-gallery-hint-heart" aria-hidden>
+              ♥
+            </span>
+          </p>
+          <div className="timeline-gallery-track">
+            <div className="timeline-feed" role="list">
+              <div className="timeline-line" aria-hidden />
+              {moments.map((moment, index) => (
+                <TimelineCard
+                  key={moment.id}
+                  moment={moment}
+                  index={index}
+                  onEdit={setEditing}
+                  onDelete={setDeleting}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
       ) : null}
 
       <EditMomentDialog

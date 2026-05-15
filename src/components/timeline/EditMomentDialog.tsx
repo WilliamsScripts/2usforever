@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Loader2, Sparkles, Wand2 } from "lucide-react";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -10,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useGenerateMessage, useImproveMessage } from "@/hooks/useGeminiMessage";
 import { OCCASIONS } from "@/types/moment";
 import type { TimelineMoment } from "@/types/timeline";
 import type { UpdateTimelineMomentPayload } from "@/types/timeline";
@@ -36,6 +39,12 @@ export function EditMomentDialog({
   const [message, setMessage] = useState("");
   const [scheduledDate, setScheduledDate] = useState("");
 
+  const generateMessageMutation = useGenerateMessage();
+  const improveMessageMutation = useImproveMessage();
+  const isGeneratingMessage = generateMessageMutation.isPending;
+  const isImprovingMessage = improveMessageMutation.isPending;
+  const isAiBusy = isGeneratingMessage || isImprovingMessage;
+
   useEffect(() => {
     if (!moment) return;
     setOccasion(moment.occasion ?? "");
@@ -45,6 +54,46 @@ export function EditMomentDialog({
     setMessage(moment.message ?? "");
     setScheduledDate(moment.scheduled_date ?? "");
   }, [moment]);
+
+  const generateMessage = async () => {
+    try {
+      const generated = await generateMessageMutation.mutateAsync({
+        occasion,
+        headline: headline.trim() || undefined,
+        sender: sender.trim() || undefined,
+        recipient,
+      });
+      setMessage(generated);
+      toast.success("Generated love message");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to generate message",
+      );
+    }
+  };
+
+  const improveMessage = async () => {
+    if (!message.trim()) {
+      toast.error("Write a message first, then I can improve it");
+      return;
+    }
+
+    try {
+      const improved = await improveMessageMutation.mutateAsync({
+        occasion,
+        headline: headline.trim() || undefined,
+        sender: sender.trim() || undefined,
+        recipient,
+        message,
+      });
+      setMessage(improved);
+      toast.success("Message improved");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to improve message",
+      );
+    }
+  };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -60,8 +109,8 @@ export function EditMomentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+      <DialogContent className="top-[max(1rem,4dvh)] flex max-h-[min(92dvh,100dvh-1rem)] w-[calc(100vw-1.5rem)] max-w-md translate-y-0 flex-col gap-0 overflow-hidden p-0 sm:top-1/2 sm:w-full sm:-translate-y-1/2">
+        <DialogHeader className="shrink-0 space-y-1 px-4 pt-4 pb-2">
           <DialogTitle>Edit moment</DialogTitle>
           <DialogDescription>
             Update the details of this moment. Only you can change moments you
@@ -69,7 +118,11 @@ export function EditMomentDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="grid gap-3">
+        <form
+          onSubmit={handleSubmit}
+          className="flex min-h-0 flex-1 flex-col overflow-hidden"
+        >
+          <div className="grid min-h-0 flex-1 gap-3 overflow-y-auto overscroll-contain px-4 py-1">
           <label className="timeline-field">
             <span>Occasion</span>
             <select
@@ -120,10 +173,39 @@ export function EditMomentDialog({
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="timeline-input timeline-textarea"
-              rows={5}
+              className="timeline-input timeline-textarea min-h-[88px] max-h-40 resize-y"
+              rows={4}
               maxLength={2000}
+              disabled={isAiBusy}
             />
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={generateMessage}
+                disabled={isAiBusy}
+                className="flex cursor-pointer items-center gap-1 rounded-full border-[0.5px] border-[#C8516A] bg-[#C8516A]/5 px-3 py-1 text-[13px] font-medium tracking-tight text-[#C8516A] disabled:opacity-50"
+              >
+                {isGeneratingMessage ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Sparkles className="h-3.5 w-3.5" />
+                )}
+                Generate with AI
+              </button>
+              <button
+                type="button"
+                onClick={improveMessage}
+                disabled={isAiBusy}
+                className="flex cursor-pointer items-center gap-1 rounded-full border-[0.5px] border-[#7A1A2A] bg-[#7A1A2A]/5 px-3 py-1 text-[13px] font-medium tracking-tight text-[#7A1A2A] disabled:opacity-50"
+              >
+                {isImprovingMessage ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Wand2 className="h-3.5 w-3.5" />
+                )}
+                Improve message
+              </button>
+            </div>
           </label>
 
           <label className="timeline-field">
@@ -135,8 +217,9 @@ export function EditMomentDialog({
               className="timeline-input"
             />
           </label>
+          </div>
 
-          <DialogFooter className="mt-2 gap-2 sm:justify-end">
+          <DialogFooter className="mt-0 shrink-0 gap-2 rounded-none border-t bg-muted/50 px-4 py-3 sm:justify-end mx-0 mb-0">
             <Button
               type="button"
               variant="outline"
@@ -145,7 +228,7 @@ export function EditMomentDialog({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSaving}>
+            <Button type="submit" disabled={isSaving || isAiBusy}>
               {isSaving ? "Saving…" : "Save changes"}
             </Button>
           </DialogFooter>

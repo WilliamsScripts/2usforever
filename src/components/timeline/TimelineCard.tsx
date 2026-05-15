@@ -37,6 +37,12 @@ export function TimelineCard({
     const node = ref.current;
     if (!node) return;
 
+    const mobileQuery = window.matchMedia("(max-width: 767px)");
+    if (mobileQuery.matches) {
+      setVisible(true);
+      return;
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -54,6 +60,7 @@ export function TimelineCard({
   return (
     <article
       ref={ref}
+      role="listitem"
       className={cn(
         "timeline-card",
         isSent ? "timeline-card--sent" : "timeline-card--received",
@@ -82,11 +89,7 @@ export function TimelineCard({
         </h3>
 
         {moment.message ? (
-          <p className="timeline-card-message">
-            {moment.message.length > 220
-              ? `${moment.message.slice(0, 220)}…`
-              : moment.message}
-          </p>
+          <p className="timeline-card-message">{moment.message}</p>
         ) : null}
 
         <div className="timeline-card-actions">

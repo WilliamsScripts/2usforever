@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (error) {
-      const mapped = mapSupabaseAuthError(error.message);
+      const mapped = mapSupabaseAuthError(error.message, error.code, "send");
       const status = mapped.code === "RATE_LIMITED" ? 429 : 500;
       return errorResponse(mapped.message, status, mapped.code, error.message);
     }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { isCaptchaEnabled } from "@/components/auth/Captcha";
@@ -8,6 +8,7 @@ import { useSendOtp, useVerifyOtp } from "@/hooks/useAuth";
 import { useAuthResendAnalytics } from "@/hooks/useAuthResendAnalytics";
 import { useCooldown } from "@/hooks/useCooldown";
 import { parseAuthError } from "@/lib/auth/errors";
+import { OTP_LENGTH } from "@/lib/auth/otp";
 import { isDeviceRemembered } from "@/lib/auth/remember-device";
 
 type LoginStep = "email" | "code";
@@ -19,8 +20,6 @@ type UseOtpLoginOptions = {
   onCaptchaReset?: () => void;
 };
 
-const SEND_DEBOUNCE_MS = 500;
-
 export function useOtpLogin({
   next,
   captchaToken,
@@ -31,14 +30,12 @@ export function useOtpLogin({
   const sendOtpMutation = useSendOtp();
   const verifyOtpMutation = useVerifyOtp();
   const trackResend = useAuthResendAnalytics();
-  const lastSendAtRef = useRef(0);
 
   const [step, setStep] = useState<LoginStep>("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [otpInvalid, setOtpInvalid] = useState(false);
   const [hasSentOnce, setHasSentOnce] = useState(false);
-  const [isLocked, setIsLocked] = useState(false);
 
   const cooldownScope = email.trim().toLowerCase() || "anonymous";
 
@@ -48,17 +45,12 @@ export function useOtpLogin({
 
   const isSending = sendOtpMutation.isPending;
   const isVerifying = verifyOtpMutation.isPending;
-  const isSubmitting = isLocked || isSending || isVerifying;
-  const isResendDisabled = isSending || isCoolingDown || isLocked;
+  const isSubmitting = isSending || isVerifying;
+  const isResendDisabled = isSending || isCoolingDown;
 
   const runSendOtp = useCallback(
     async (isResend: boolean) => {
-      if (isLocked || isCoolingDown) {
-        return;
-      }
-
-      const now = Date.now();
-      if (now - lastSendAtRef.current < SEND_DEBOUNCE_MS) {
+      if (isSending || (isResend && isCoolingDown)) {
         return;
       }
 
@@ -75,9 +67,6 @@ export function useOtpLogin({
         toast.error("Complete the security check before continuing.");
         return;
       }
-
-      lastSendAtRef.current = now;
-      setIsLocked(true);
 
       try {
         await sendOtpMutation.mutateAsync({
@@ -112,15 +101,13 @@ export function useOtpLogin({
         if (authError.code === "RATE_LIMITED") {
           startCooldown();
         }
-      } finally {
-        setIsLocked(false);
       }
     },
     [
       captchaToken,
       email,
       isCoolingDown,
-      isLocked,
+      isSending,
       onCaptchaReset,
       rememberDevice,
       sendOtpMutation,
@@ -138,11 +125,10 @@ export function useOtpLogin({
   }, [runSendOtp]);
 
   const handleVerifyCode = useCallback(async () => {
-    if (isLocked || code.length !== 6) {
+    if (isVerifying || code.length !== OTP_LENGTH) {
       return;
     }
 
-    setIsLocked(true);
     setOtpInvalid(false);
 
     try {
@@ -163,10 +149,8 @@ export function useOtpLogin({
         authError.code === "INVALID_OTP" || authError.code === "EXPIRED_OTP",
       );
       toast.error(authError.message);
-    } finally {
-      setIsLocked(false);
     }
-  }, [code, email, isLocked, next, rememberDevice, router, verifyOtpMutation]);
+  }, [code, email, isVerifying, next, rememberDevice, router, verifyOtpMutation]);
 
   const resetToEmailStep = useCallback(() => {
     setStep("email");

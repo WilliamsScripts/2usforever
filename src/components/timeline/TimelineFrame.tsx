@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePetalAnimation } from "@/hooks/usePetalAnimation";
+import { LogOut, Plus } from "lucide-react";
 
 type TimelineFrameProps = {
   children: React.ReactNode;
@@ -21,7 +22,11 @@ function PetalsCanvas() {
   );
 }
 
-export function TimelineFrame({ children, email, onSignOut }: TimelineFrameProps) {
+export function TimelineFrame({
+  children,
+  email,
+  onSignOut,
+}: TimelineFrameProps) {
   return (
     <div className="timeline-shell">
       <PetalsCanvas />
@@ -31,14 +36,20 @@ export function TimelineFrame({ children, email, onSignOut }: TimelineFrameProps
         </Link>
         <div className="timeline-nav-actions">
           <Link href="/create-moment" className="timeline-nav-cta">
-            Create a moment
+            <span className="hidden sm:block">Create a moment</span>
+            <span className="block sm:hidden">Create</span>
           </Link>
           {email ? (
             <div className="timeline-user">
               <span className="timeline-user-email">{email}</span>
               {onSignOut ? (
-                <button type="button" onClick={onSignOut} className="timeline-signout">
-                  Sign out
+                <button
+                  type="button"
+                  onClick={onSignOut}
+                  className="timeline-signout"
+                >
+                  <span className="hidden sm:block">Sign out</span>
+                  <LogOut className="block sm:hidden size-4" />
                 </button>
               ) : null}
             </div>

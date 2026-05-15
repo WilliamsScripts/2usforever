@@ -5,9 +5,8 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
+import { OTP_LENGTH } from "@/lib/auth/otp";
 import { cn } from "@/lib/utils";
-
-const OTP_LENGTH = 6;
 
 type OtpInputProps = {
   value: string;
@@ -54,4 +53,4 @@ export function OtpInput({
   );
 }
 
-export { OTP_LENGTH };
+export { OTP_LENGTH } from "@/lib/auth/otp";

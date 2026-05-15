@@ -1242,6 +1242,10 @@ footer {
   color: var(--rose);
 }
 
+.timeline-gallery-hint {
+  display: none;
+}
+
 .timeline-feed {
   position: relative;
   max-width: 920px;
@@ -1571,18 +1575,198 @@ footer {
 }
 
 @media (max-width: 767px) {
+  .timeline-main {
+    padding-bottom: 72px;
+    overflow-x: clip;
+  }
+
+  .timeline-hero {
+    margin-bottom: 28px;
+  }
+
+  .timeline-gallery {
+    margin-inline: calc(-1 * clamp(20px, 4vw, 48px));
+  }
+
+  .timeline-gallery-hint {
+    display: block;
+    margin: 0 0 14px;
+    padding-inline: clamp(20px, 4vw, 48px);
+    font-family: var(--font-cormorant), "Cormorant Garamond", serif;
+    font-size: 1.15rem;
+    font-style: italic;
+    color: var(--rose-deep);
+    text-align: center;
+    animation: timeline-hint-pulse 3s ease-in-out infinite;
+  }
+
+  .timeline-gallery-hint-heart {
+    display: inline-block;
+    margin-left: 0.35em;
+    color: var(--rose);
+    animation: timeline-heart-float 2.4s ease-in-out infinite;
+  }
+
+  @keyframes timeline-hint-pulse {
+    0%,
+    100% {
+      opacity: 0.72;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes timeline-heart-float {
+    0%,
+    100% {
+      transform: translateY(0) scale(1);
+    }
+    50% {
+      transform: translateY(-3px) scale(1.08);
+    }
+  }
+
+  .timeline-gallery-track {
+    position: relative;
+    padding-block: 6px 20px;
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 28px,
+      #000 calc(100% - 28px),
+      transparent
+    );
+  }
+
+  .timeline-gallery-track::before {
+    content: "";
+    position: absolute;
+    left: clamp(20px, 4vw, 48px);
+    right: clamp(20px, 4vw, 48px);
+    bottom: 10px;
+    height: 2px;
+    border-radius: 999px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(200, 81, 106, 0.35) 12%,
+      rgba(200, 81, 106, 0.35) 88%,
+      transparent
+    );
+    pointer-events: none;
+  }
+
+  .timeline-feed {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 14px;
+    max-width: none;
+    margin: 0;
+    padding: 4px clamp(20px, 4vw, 48px) 28px;
+    overflow-x: auto;
+    overflow-y: visible;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: clamp(20px, 4vw, 48px);
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .timeline-feed::-webkit-scrollbar {
+    display: none;
+  }
+
   .timeline-line {
-    left: 18px;
+    display: none;
+  }
+
+  .timeline-card {
+    flex: 0 0 min(86vw, 340px);
+    scroll-snap-align: center;
+    display: flex;
+    flex-direction: column;
+    opacity: 1;
     transform: none;
   }
 
-  .timeline-card--sent .timeline-card-body,
+  .timeline-card--visible {
+    transform: none;
+  }
+
+  .timeline-card-rail {
+    display: flex;
+    justify-content: center;
+    order: -1;
+    padding-bottom: 4px;
+  }
+
+  .timeline-card-heart {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: white;
+    color: var(--rose);
+    border: 2px solid rgba(200, 81, 106, 0.28);
+    box-shadow: 0 0 0 5px rgba(200, 81, 106, 0.08);
+  }
+
+  .timeline-card-body {
+    width: 100%;
+    min-height: min(58vh, 420px);
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    box-shadow:
+      0 20px 50px rgba(200, 81, 106, 0.14),
+      0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+  }
+
+  .timeline-card--sent .timeline-card-body {
+    margin: 0;
+    border-top-right-radius: 8px;
+    background: linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.96) 0%,
+      rgba(255, 240, 244, 0.94) 100%
+    );
+    transform: rotate(-0.6deg);
+  }
+
   .timeline-card--received .timeline-card-body {
-    margin-left: 36px;
-    margin-right: 0;
+    margin: 0;
+    border-top-left-radius: 8px;
+    background: linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.96) 0%,
+      rgba(252, 245, 255, 0.94) 100%
+    );
+    transform: rotate(0.6deg);
+  }
+
+  .timeline-card-message {
+    flex: 1;
+    max-height: 38vh;
+    overflow-y: auto;
+    margin-bottom: 14px;
+    padding-right: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(200, 81, 106, 0.35) transparent;
+  }
+
+  .timeline-card-actions {
+    margin-top: auto;
   }
 
   .timeline-user-email {
     display: none;
+  }
+
+  .timeline-nav-cta {
+    padding: 8px 14px;
+    font-size: 0.8rem;
   }
 }

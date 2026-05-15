@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { mapSupabaseAuthError } from "@/lib/auth/errors";
+import { OTP_PATTERN } from "@/lib/auth/otp";
 import { createCallbackClient } from "@/lib/supabase/server";
 import type { AuthApiErrorBody } from "@/types/auth";
 
@@ -9,7 +10,7 @@ const verifyOtpSchema = z.object({
   token: z
     .string()
     .trim()
-    .regex(/^\d{6}$/, "Enter the 6-digit code from your email"),
+    .regex(OTP_PATTERN, "Enter the code from your email"),
   next: z.string().optional(),
 });
 
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest) {
 
     if (!parsed.success) {
       return errorResponse(
-        "Enter the 6-digit code from your email.",
+        "Enter the code from your email.",
         400,
         "INVALID_OTP",
       );
@@ -56,7 +57,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (error) {
-      const mapped = mapSupabaseAuthError(error.message);
+      const mapped = mapSupabaseAuthError(error.message, error.code, "verify");
       return errorResponse(
         mapped.message,
         mapped.code === "RATE_LIMITED" ? 429 : 401,

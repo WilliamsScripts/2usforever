@@ -91,7 +91,7 @@ export function OtpLoginForm({ next, authError = false }: OtpLoginFormProps) {
           <div className="timeline-login-sent">
             <p className="timeline-login-sent-title">Enter your code</p>
             <p>
-              We sent a 6-digit code to <strong>{email}</strong>.
+              We sent a {OTP_LENGTH}-digit code to <strong>{email}</strong>.
             </p>
           </div>
 
@@ -178,9 +178,7 @@ export function OtpLoginForm({ next, authError = false }: OtpLoginFormProps) {
             type="submit"
             className="timeline-login-submit mt-4 h-11 w-full rounded-full border-0 bg-[color:var(--rose)] text-base font-medium text-white hover:bg-[color:var(--rose-deep)]"
             disabled={
-              isSending ||
-              isSubmitting ||
-              (captchaRequired && !captchaToken)
+              isSending || isSubmitting || (captchaRequired && !captchaToken)
             }
           >
             {isSending ? "Sending…" : "Send sign-in code"}

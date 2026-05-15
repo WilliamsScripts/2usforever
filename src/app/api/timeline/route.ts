@@ -33,11 +33,14 @@ export async function GET() {
     }
 
     const email = normalizeEmail(user.email);
+
     const { data, error } = await supabase
       .from("moments")
       .select("*")
       .or(`sender_email.eq.${email},recipient_email.eq.${email}`)
       .order("created_at", { ascending: false });
+
+    console.log("data", data);
 
     if (error) {
       return NextResponse.json(
