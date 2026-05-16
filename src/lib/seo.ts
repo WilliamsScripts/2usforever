@@ -127,9 +127,9 @@ export const homeMetadata: Metadata = {
     ],
   }),
   openGraph: {
-    title: "2UsForever — They'll Open a Link. They'll Feel Everything.",
+    title: "The perfect romantic surprise for any special occasion.",
     description:
-      "A personalised love page with your words, photos and Spotify song. Built in minutes. Remembered forever.",
+      "Someone is waiting to feel completely loved. Create a personalised love page in minutes with your words, photos and song.",
     url: siteUrl,
     siteName: SITE_NAME,
     type: "website",
@@ -137,9 +137,9 @@ export const homeMetadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "2UsForever — They'll Open a Link. They'll Feel Everything.",
+    title: "The perfect romantic surprise for any special occasion.",
     description:
-      "A personalised love page with your words, photos and Spotify song. Built in minutes. Remembered forever.",
+      "Someone is waiting to feel completely loved. Create a personalised love page in minutes with your words, photos and song.",
   },
 };
 

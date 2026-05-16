@@ -60,8 +60,8 @@ export default function HomePage() {
         </h1>
 
         <p>
-          A personalised page with your words, your photos, and your song. Built
-          in minutes, remembered forever.
+          The perfect romantic surprise for any occasion. Create a personalised
+          love page in minutes with your words, photos and a song.
         </p>
 
         <div className="hero-actions">
