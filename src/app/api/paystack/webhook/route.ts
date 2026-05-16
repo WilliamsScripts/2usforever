@@ -1,19 +1,39 @@
 import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { activateMomentNotifications } from "@/services/moment-activation.service";
+import { sendMomentEmails } from "@/services/email.service";
+import { sendMomentWhatsapp } from "@/services/termii.service";
 import type { MomentRecord } from "@/types/moment";
 
 type PaystackWebhookEvent = {
   event: string;
   data?: {
     reference?: string;
-    amount?: number;
-    metadata?: {
-      momentId?: string;
-    };
+    metadata?: unknown;
   };
 };
+
+function extractMomentId(metadata: unknown): string | null {
+  if (metadata == null) return null;
+
+  let parsed: unknown = metadata;
+  if (typeof metadata === "string") {
+    try {
+      parsed = JSON.parse(metadata) as unknown;
+    } catch {
+      return null;
+    }
+  }
+
+  if (typeof parsed !== "object" || parsed === null) return null;
+
+  const momentId = (parsed as Record<string, unknown>).momentId;
+  if (typeof momentId === "string" && momentId.trim()) {
+    return momentId.trim();
+  }
+
+  return null;
+}
 
 export async function POST(req: Request) {
   const secretKey = process.env.PAYSTACK_SECRET_KEY;
@@ -44,11 +64,14 @@ export async function POST(req: Request) {
     return new Response("OK", { status: 200 });
   }
 
-  const momentId = event.data?.metadata?.momentId;
+  const momentId = extractMomentId(event.data?.metadata);
   const reference = event.data?.reference;
 
   if (!momentId || !reference) {
-    console.warn("[paystack webhook] missing momentId or reference", event);
+    console.warn("[paystack webhook] missing momentId or reference", {
+      metadata: event.data?.metadata,
+      reference,
+    });
     return new Response("OK", { status: 200 });
   }
 
@@ -69,7 +92,7 @@ export async function POST(req: Request) {
     return new Response("OK", { status: 200 });
   }
 
-  const { data: updated, error: updateError } = await supabase
+  const { data, error: updateError } = await supabase
     .from("moments")
     .update({
       payment_status: "paid",
@@ -80,7 +103,7 @@ export async function POST(req: Request) {
     .select()
     .single();
 
-  if (updateError || !updated) {
+  if (updateError || !data) {
     console.error("[paystack webhook] failed to activate moment", updateError);
     return NextResponse.json(
       { error: "Failed to activate moment" },
@@ -88,10 +111,48 @@ export async function POST(req: Request) {
     );
   }
 
-  try {
-    await activateMomentNotifications(updated as MomentRecord);
-  } catch (error) {
-    console.error("[paystack webhook] notification delivery failed", error);
+  const moment = data as MomentRecord;
+  const senderEmail = moment.sender_email?.trim();
+
+  if (!senderEmail) {
+    console.error("[paystack webhook] moment missing sender email", momentId);
+    return new Response("OK", { status: 200 });
+  }
+
+  const [{ senderResult, recipientResult }, whatsappResult] = await Promise.all([
+    sendMomentEmails({
+      moment,
+      senderEmail,
+      recipientEmail: moment.recipient_email,
+      paymentCompleted: true,
+    }),
+    sendMomentWhatsapp({
+      moment,
+      recipientPhone: moment.recipient_phone ?? "",
+    }),
+  ]);
+
+  if (senderResult.error) {
+    console.log("sender email error", senderResult.error);
+    return NextResponse.json(
+      {
+        error: "Failed to send confirmation email",
+        details: senderResult.error.message,
+      },
+      { status: 500 },
+    );
+  }
+
+  if (recipientResult?.error) {
+    console.warn("recipient email error", recipientResult.error);
+  }
+
+  if (whatsappResult === null) {
+    console.log("[termii whatsapp] not sent: no valid recipient phone");
+  } else if (!whatsappResult.ok) {
+    console.warn("[termii whatsapp] delivery failed", whatsappResult.error);
+  } else {
+    console.log("[termii whatsapp] delivery confirmed", whatsappResult.data);
   }
 
   return new Response("OK", { status: 200 });
