@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import LandingFrame from "@/components/landing/LandingFrame";
 import CreateMomentBuilder from "@/components/landing/CreateMomentBuilder";
 import { createPageMetadata, SITE_KEYWORDS } from "@/lib/seo";
@@ -21,7 +22,9 @@ export const metadata: Metadata = createPageMetadata({
 export default function CreateMomentPage() {
   return (
     <LandingFrame ctaHref="/create-moment">
-      <CreateMomentBuilder />
+      <Suspense fallback={null}>
+        <CreateMomentBuilder />
+      </Suspense>
     </LandingFrame>
   );
 }

@@ -8,6 +8,15 @@ export type SenderConfirmationEmailProps = {
   scheduledDate?: string | null;
   headline?: string | null;
   recipientPhone?: string | null;
+  paymentCompleted?: boolean;
+};
+
+export type SenderPaymentPendingEmailProps = {
+  recipientName: string;
+  occasion: string;
+  paymentUrl: string;
+  timelineUrl: string;
+  scheduledDate?: string | null;
 };
 
 export type RecipientMomentEmailProps = {

@@ -30,11 +30,10 @@ export async function getMoment(
 
 export async function createMoment(
   payload: CreateMomentPayload,
-): Promise<MomentRecord> {
-  const { data } = await apiRequest<CreateMomentResponse>("/api/moments", {
+): Promise<CreateMomentResponse> {
+  return apiRequest<CreateMomentResponse>("/api/moments", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-  return data;
 }

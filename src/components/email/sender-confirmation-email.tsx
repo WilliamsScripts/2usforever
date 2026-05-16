@@ -18,14 +18,29 @@ export function SenderConfirmationEmail({
   createMomentUrl,
   scheduledDate,
   recipientPhone,
+  paymentCompleted = false,
 }: SenderConfirmationEmailProps) {
   const scheduledLabel = formatScheduledLabel(scheduledDate);
 
   return (
     <EmailLayout
       preview={`Your moment for ${recipientName} is ready to share.`}
-      eyebrow="Moment created"
+      eyebrow={paymentCompleted ? "Payment complete" : "Moment created"}
     >
+      {paymentCompleted ? (
+        <p
+          style={{
+            margin: "0 0 12px",
+            fontSize: 14,
+            lineHeight: 1.6,
+            color: emailColors.rose,
+            textAlign: "center",
+            fontWeight: 500,
+          }}
+        >
+          Thank you — your payment was successful.
+        </p>
+      ) : null}
       <p
         style={{
           margin: "0 0 18px",
@@ -37,8 +52,9 @@ export function SenderConfirmationEmail({
       >
         Your {occasion.toLowerCase()} page for{" "}
         <strong style={{ color: emailColors.textDark }}>{recipientName}</strong>{" "}
-        has been saved. Share the link whenever you&apos;re ready or send it
-        straight to them on WhatsApp.
+        {paymentCompleted
+          ? "is live. Share the link whenever you're ready or send it straight to them on WhatsApp."
+          : "has been saved. Share the link whenever you're ready or send it straight to them on WhatsApp."}
       </p>
 
       <EmailButton href={momentUrl} label="View" />

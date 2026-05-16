@@ -1,10 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import posthog from "posthog-js";
+import { getMoment } from "@/services/moments.service";
 import { useTemplates } from "@/context/TemplateContext";
 import { todayDateInputValue } from "@/lib/scheduled-date";
 import {
@@ -31,6 +33,8 @@ import type { SpotifyTrack } from "@/types/spotify";
 import type { UploadResult } from "@/types/cloudinary";
 
 export function useCreateMomentBuilder() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const TEMPLATES = useTemplates();
   const createMomentMutation = useCreateMoment();
   const generateMessageMutation = useGenerateMessage();
@@ -81,6 +85,41 @@ export function useCreateMomentBuilder() {
   const [successModalOpen, setSuccessModalOpen] = useState(false);
   const [deliveryTiming, setDeliveryTiming] =
     useState<DeliveryTiming>("immediate");
+
+  useEffect(() => {
+    const payment = searchParams.get("payment");
+    const momentId = searchParams.get("moment_id");
+    if (payment !== "success" || !momentId) return;
+
+    let cancelled = false;
+
+    void (async () => {
+      try {
+        const moment = await getMoment(momentId);
+        if (cancelled || !moment) {
+          toast.error("We could not load your moment after payment");
+          return;
+        }
+
+        setSavedMoment(moment);
+        setSuccessModalOpen(true);
+        posthog.capture("moment_payment_returned", { moment_id: moment.id });
+        toast.success("Payment successful — your moment is live");
+      } catch {
+        if (!cancelled) {
+          toast.error("Payment received, but we could not load your moment");
+        }
+      } finally {
+        if (!cancelled) {
+          router.replace("/create-moment", { scroll: false });
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [router, searchParams]);
 
   const preview = useMemo(
     () =>
@@ -143,12 +182,12 @@ export function useCreateMomentBuilder() {
     }
 
     try {
-      const record = await createMomentMutation.mutateAsync(
-        buildCreateMomentPayload(values, deliveryTiming),
-      );
-      setSavedMoment(record);
-      setSuccessModalOpen(true);
-      posthog.capture("moment_created", {
+      const { data: record, authorization_url } =
+        await createMomentMutation.mutateAsync(
+          buildCreateMomentPayload(values, deliveryTiming),
+        );
+
+      posthog.capture("moment_draft_created", {
         occasion: values.occasion,
         template: values.template,
         delivery_timing: deliveryTiming,
@@ -159,11 +198,9 @@ export function useCreateMomentBuilder() {
         has_recipient_email: !!values.recipient_email?.trim(),
         moment_id: record.id,
       });
-      toast.success(
-        deliveryTiming === "scheduled"
-          ? "Moment scheduled successfully"
-          : "Moment created and on its way",
-      );
+
+      toast.success("Redirecting to secure payment…");
+      window.location.assign(authorization_url);
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Could not create this moment";

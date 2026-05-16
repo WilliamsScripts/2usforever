@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { SenderConfirmationEmail } from "@/components/email/sender-confirmation-email";
+import { SenderPaymentPendingEmail } from "@/components/email/sender-payment-pending-email";
 import { RecipientMomentEmail } from "@/components/email/recipient-moment-email";
 import type { MomentRecord } from "@/types/moment";
 
@@ -23,35 +24,72 @@ function getCreateMomentUrl(): string {
   return `${baseUrl.replace(/\/$/, "")}/create-moment`;
 }
 
-type SendMomentEmailsInput = {
-  moment: MomentRecord;
-  senderEmail: string;
-  recipientEmail?: string | null;
-};
-
-export async function sendMomentEmails({
-  moment,
-  senderEmail,
-  recipientEmail,
-}: SendMomentEmailsInput) {
-  const momentUrl = getMomentUrl(moment.id);
-  const emailProps = {
+function buildEmailProps(moment: MomentRecord) {
+  return {
     recipientName: moment.recipient ?? "you",
     senderName: moment.sender,
     occasion: moment.occasion ?? "Love Note",
-    momentUrl,
+    momentUrl: getMomentUrl(moment.id),
     timelineUrl: getTimelineUrl(),
     createMomentUrl: getCreateMomentUrl(),
     scheduledDate: moment.scheduled_date,
     headline: moment.headline,
     recipientPhone: moment.recipient_phone,
   };
+}
+
+type SendPaymentPendingEmailInput = {
+  moment: MomentRecord;
+  senderEmail: string;
+  paymentUrl: string;
+};
+
+export async function sendPaymentPendingEmail({
+  moment,
+  senderEmail,
+  paymentUrl,
+}: SendPaymentPendingEmailInput) {
+  const emailProps = buildEmailProps(moment);
+
+  return resend.emails.send({
+    from: FROM_ADDRESS,
+    to: [senderEmail],
+    subject: `Complete payment for your ${emailProps.occasion.toLowerCase()} page`,
+    react: SenderPaymentPendingEmail({
+      recipientName: emailProps.recipientName,
+      occasion: emailProps.occasion,
+      paymentUrl,
+      timelineUrl: emailProps.timelineUrl,
+      scheduledDate: emailProps.scheduledDate,
+    }),
+  });
+}
+
+type SendMomentEmailsInput = {
+  moment: MomentRecord;
+  senderEmail: string;
+  recipientEmail?: string | null;
+  paymentCompleted?: boolean;
+};
+
+export async function sendMomentEmails({
+  moment,
+  senderEmail,
+  recipientEmail,
+  paymentCompleted = false,
+}: SendMomentEmailsInput) {
+  const emailProps = buildEmailProps(moment);
 
   const senderResult = await resend.emails.send({
     from: FROM_ADDRESS,
     to: [senderEmail],
-    subject: `Your ${emailProps.occasion.toLowerCase()} page for ${emailProps.recipientName} is ready`,
-    react: SenderConfirmationEmail(emailProps),
+    subject: paymentCompleted
+      ? `Payment received — your ${emailProps.occasion.toLowerCase()} page for ${emailProps.recipientName} is live`
+      : `Your ${emailProps.occasion.toLowerCase()} page for ${emailProps.recipientName} is ready`,
+    react: SenderConfirmationEmail({
+      ...emailProps,
+      paymentCompleted,
+    }),
   });
 
   if (senderResult.error) {

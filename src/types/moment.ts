@@ -58,7 +58,12 @@ export type MomentRecord = {
   sender_email?: string | null;
   recipient_email?: string | null;
   recipient_phone?: string | null;
+  status: MomentStatus;
+  payment_status: MomentPaymentStatus;
 };
+
+export type MomentStatus = "draft" | "active";
+export type MomentPaymentStatus = "pending" | "paid";
 
 export type MomentData = {
   occasion?: string | null;
@@ -76,6 +81,8 @@ export type MomentData = {
     album_image?: string | null;
     spotify_url?: string;
   } | null;
+  status: MomentStatus;
+  payment_status: MomentPaymentStatus;
 };
 
 export type CreateMomentPayload = {
@@ -95,6 +102,8 @@ export type CreateMomentPayload = {
 
 export type CreateMomentResponse = {
   data: MomentRecord;
+  authorization_url: string;
+  payment_reference?: string;
 };
 
 export type GetMomentResponse = {

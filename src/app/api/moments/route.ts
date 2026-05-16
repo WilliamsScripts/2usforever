@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
-import { sendMomentEmails } from "@/services/email.service";
-import { sendMomentWhatsapp } from "@/services/termii.service";
+import { sendPaymentPendingEmail } from "@/services/email.service";
+import { initializePaystackTransaction } from "@/services/paystack.service";
 import { getPostHogClient } from "@/lib/posthog-server";
 
 const musicSchema = z.object({
@@ -22,7 +22,7 @@ const createMomentSchema = z.object({
   photos: z.array(z.string().url()).max(5).optional(),
   music: musicSchema.optional().nullable(),
   template: z.string().optional().nullable(),
-  sender_email: z.string().trim().min(1),
+  sender_email: z.string().trim().email(),
   recipient_email: z.string().trim().max(120).optional().nullable(),
   recipient_phone: z.string().trim().length(11),
   scheduled_date: z
@@ -78,6 +78,8 @@ export async function POST(request: NextRequest) {
         recipient_email: payload.recipient_email ?? "",
         recipient_phone: payload.recipient_phone,
         scheduled_date: payload.scheduled_date ?? null,
+        status: "draft",
+        payment_status: "pending",
       })
       .select()
       .single();
@@ -90,46 +92,46 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const [{ senderResult, recipientResult }, whatsappResult] =
-      await Promise.all([
-        sendMomentEmails({
-          moment: data,
-          senderEmail: payload.sender_email,
-          recipientEmail: payload.recipient_email,
-        }),
-        sendMomentWhatsapp({
-          moment: data,
-          recipientPhone: payload.recipient_phone,
-        }),
-      ]);
-
-    if (senderResult.error) {
-      console.log("sender email error", senderResult.error);
+    let paystack;
+    try {
+      paystack = await initializePaystackTransaction({
+        email: payload.sender_email,
+        momentId: data.id,
+      });
+    } catch (paystackError) {
+      console.error("[paystack] initialize failed", paystackError);
       return NextResponse.json(
         {
-          error: "Failed to send confirmation email",
-          details: senderResult.error.message,
+          error:
+            paystackError instanceof Error
+              ? paystackError.message
+              : "Failed to start payment",
         },
         { status: 500 },
       );
     }
 
-    if (recipientResult?.error) {
-      console.warn("recipient email error", recipientResult.error);
-    }
+    const pendingEmailResult = await sendPaymentPendingEmail({
+      moment: data,
+      senderEmail: payload.sender_email,
+      paymentUrl: paystack.authorizationUrl,
+    });
 
-    if (whatsappResult === null) {
-      console.log("[termii whatsapp] not sent: no valid recipient phone");
-    } else if (!whatsappResult.ok) {
-      console.warn("[termii whatsapp] delivery failed", whatsappResult.error);
-    } else {
-      console.log("[termii whatsapp] delivery confirmed", whatsappResult.data);
+    if (pendingEmailResult.error) {
+      console.log("payment pending email error", pendingEmailResult.error);
+      return NextResponse.json(
+        {
+          error: "Failed to send payment email",
+          details: pendingEmailResult.error.message,
+        },
+        { status: 500 },
+      );
     }
 
     const posthog = getPostHogClient();
     posthog.capture({
       distinctId: payload.sender_email,
-      event: "server_moment_created",
+      event: "server_moment_draft_created",
       properties: {
         moment_id: data.id,
         occasion: payload.occasion,
@@ -138,19 +140,16 @@ export async function POST(request: NextRequest) {
         has_photos: (payload.photos?.length ?? 0) > 0,
         has_recipient_email: !!payload.recipient_email?.trim(),
         is_scheduled: !!payload.scheduled_date,
-        email_sent: !senderResult.error,
-        whatsapp_sent: whatsappResult?.ok === true,
+        payment_email_sent: !pendingEmailResult.error,
       },
     });
 
     return NextResponse.json(
       {
         data,
-        emailData: {
-          sender: senderResult.data,
-          recipient: recipientResult?.data ?? null,
-        },
-        whatsappData: whatsappResult?.ok ? whatsappResult.data : null,
+        authorization_url: paystack.authorizationUrl,
+        payment_reference: paystack.reference,
+        emailData: pendingEmailResult.data,
       },
       { status: 201 },
     );
@@ -187,12 +186,12 @@ export async function GET(request: NextRequest) {
     if (error) {
       console.error("error", error);
       return NextResponse.json(
-        { error: "Failed to create moment record", details: error.message },
-        { status: 500 },
+        { error: "Failed to fetch moment", details: error.message },
+        { status: error.code === "PGRST116" ? 404 : 500 },
       );
     }
 
-    return NextResponse.json({ data }, { status: 201 });
+    return NextResponse.json({ data }, { status: 200 });
   } catch (error) {
     return NextResponse.json(
       {
