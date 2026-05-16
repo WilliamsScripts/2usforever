@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import posthog from "posthog-js";
 import { isCaptchaEnabled } from "@/components/auth/Captcha";
 import { useSendOtp, useVerifyOtp } from "@/hooks/useAuth";
 import { useAuthResendAnalytics } from "@/hooks/useAuthResendAnalytics";
@@ -86,6 +87,11 @@ export function useOtpLogin({
           email: normalizedEmail,
         });
 
+        posthog.capture("otp_sent", {
+          email: normalizedEmail,
+          is_resend: isResend,
+        });
+
         toast.success(
           isResend
             ? "A new code is on its way"
@@ -94,6 +100,11 @@ export function useOtpLogin({
       } catch (error) {
         onCaptchaReset?.();
         trackResend("otp_send_failed", { email: normalizedEmail });
+
+        posthog.capture("otp_send_failed", {
+          email: normalizedEmail,
+          is_resend: isResend,
+        });
 
         const authError = parseAuthError(error);
         toast.error(authError.message);
@@ -139,6 +150,8 @@ export function useOtpLogin({
         rememberDevice,
       });
 
+      posthog.identify(email, { email });
+      posthog.capture("otp_verified", { email });
       toast.success("You're signed in");
       router.push(result.next);
       router.refresh();
@@ -148,6 +161,10 @@ export function useOtpLogin({
       setOtpInvalid(
         authError.code === "INVALID_OTP" || authError.code === "EXPIRED_OTP",
       );
+      posthog.capture("otp_verification_failed", {
+        email,
+        error_code: authError.code,
+      });
       toast.error(authError.message);
     }
   }, [code, email, isVerifying, next, rememberDevice, router, verifyOtpMutation]);

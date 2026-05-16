@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
+import posthog from "posthog-js";
 import { useTemplates } from "@/context/TemplateContext";
 import { todayDateInputValue } from "@/lib/scheduled-date";
 import {
@@ -125,6 +126,10 @@ export function useCreateMomentBuilder() {
       },
       { shouldValidate: true },
     );
+    posthog.capture("music_track_selected", {
+      track_name: track.name,
+      artist_name: track.artist,
+    });
   };
 
   const handleSave = form.handleSubmit(async (values) => {
@@ -143,6 +148,17 @@ export function useCreateMomentBuilder() {
       );
       setSavedMoment(record);
       setSuccessModalOpen(true);
+      posthog.capture("moment_created", {
+        occasion: values.occasion,
+        template: values.template,
+        delivery_timing: deliveryTiming,
+        has_music: !!values.music,
+        has_photos: (values.photos?.length ?? 0) > 0,
+        photo_count: values.photos?.length ?? 0,
+        has_message: !!values.message?.trim(),
+        has_recipient_email: !!values.recipient_email?.trim(),
+        moment_id: record.id,
+      });
       toast.success(
         deliveryTiming === "scheduled"
           ? "Moment scheduled successfully"
@@ -151,6 +167,11 @@ export function useCreateMomentBuilder() {
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Could not create this moment";
+      posthog.capture("moment_creation_failed", {
+        error_message: errorMessage,
+        occasion: values.occasion,
+        delivery_timing: deliveryTiming,
+      });
       toast.error(errorMessage);
     }
   });
@@ -164,6 +185,7 @@ export function useCreateMomentBuilder() {
         recipient: recipient ?? "",
       });
       form.setValue("message", generated);
+      posthog.capture("ai_message_generated", { occasion });
       toast.success("Generated love message");
     } catch (error) {
       toast.error(
@@ -188,6 +210,7 @@ export function useCreateMomentBuilder() {
         message: currentMessage,
       });
       form.setValue("message", improved);
+      posthog.capture("ai_message_improved", { occasion });
       toast.success("Message improved");
     } catch (error) {
       toast.error(
@@ -205,7 +228,12 @@ export function useCreateMomentBuilder() {
       const valid = await form.trigger("template");
       if (!valid) return;
     }
-    setStep((current) => Math.min(current + 1, BUILDER_TOTAL_STEPS));
+    const nextStep = Math.min(step + 1, BUILDER_TOTAL_STEPS);
+    posthog.capture("builder_step_advanced", {
+      from_step: step,
+      to_step: nextStep,
+    });
+    setStep(nextStep);
   };
 
   const goBack = () => setStep((current) => Math.max(current - 1, 1));

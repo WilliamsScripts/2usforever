@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { sendMomentEmails } from "@/services/email.service";
 import { sendMomentWhatsapp } from "@/services/termii.service";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 const musicSchema = z.object({
   track_id: z.string().min(1),
@@ -124,6 +125,23 @@ export async function POST(request: NextRequest) {
     } else {
       console.log("[termii whatsapp] delivery confirmed", whatsappResult.data);
     }
+
+    const posthog = getPostHogClient();
+    posthog.capture({
+      distinctId: payload.sender_email,
+      event: "server_moment_created",
+      properties: {
+        moment_id: data.id,
+        occasion: payload.occasion,
+        template: payload.template ?? "classic",
+        has_music: !!payload.music,
+        has_photos: (payload.photos?.length ?? 0) > 0,
+        has_recipient_email: !!payload.recipient_email?.trim(),
+        is_scheduled: !!payload.scheduled_date,
+        email_sent: !senderResult.error,
+        whatsapp_sent: whatsappResult?.ok === true,
+      },
+    });
 
     return NextResponse.json(
       {

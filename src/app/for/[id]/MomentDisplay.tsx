@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import posthog from "posthog-js";
 import { useScheduledUnlock } from "@/hooks/useScheduledUnlock";
 import type { MomentRecord } from "@/types/moment";
 import ClassicTemplate from "./templates/ClassicTemplate";
@@ -23,6 +25,18 @@ function MomentTemplate({ data }: { data: MomentRecord }) {
 
 export default function MomentDisplay({ data }: { data: MomentRecord }) {
   const { unlocked, handleUnlocked } = useScheduledUnlock(data.scheduled_date);
+
+  useEffect(() => {
+    posthog.capture("moment_viewed", {
+      moment_id: data.id,
+      occasion: data.occasion,
+      template: data.template,
+      is_scheduled: !!data.scheduled_date,
+      has_music: !!data.music,
+      has_photos: Array.isArray(data.photos) && data.photos.length > 0,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.id]);
 
   if (!unlocked && data.scheduled_date) {
     return (

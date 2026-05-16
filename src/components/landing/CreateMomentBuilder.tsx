@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import posthog from "posthog-js";
 import CustomImagePicker from "../custom-image-picker";
 import {
   Dialog,
@@ -826,6 +827,9 @@ export default function CreateMomentBuilder() {
                       navigator.clipboard?.writeText(
                         `https://2usforever.vercel.app/for/${savedMoment.id}`,
                       );
+                      posthog.capture("moment_link_copied", {
+                        moment_id: savedMoment.id,
+                      });
                     }}
                   >
                     Copy
@@ -837,6 +841,11 @@ export default function CreateMomentBuilder() {
                     href={whatsappLink}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() =>
+                      posthog.capture("moment_shared_via_whatsapp", {
+                        moment_id: savedMoment.id,
+                      })
+                    }
                     className="flex items-center justify-center gap-2 w-full bg-[#F0EAE4] hover:bg-[#E8F5EC] border border-[rgba(184,67,90,0.15)] hover:border-[#25D366] rounded-xl py-3 text-sm font-medium text-[#1A0810] hover:text-[#1A3A1A] transition-all mb-4 no-underline"
                   >
                     <span className="w-5 h-5 rounded-full bg-[#25D366] text-white text-[11px] flex items-center justify-center shrink-0">

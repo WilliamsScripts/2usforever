@@ -27,6 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full antialiased">
       <head>
+        <GoogleAnalytics />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
@@ -36,7 +37,6 @@ export default function RootLayout({
         <link href={GOOGLE_FONTS_STYLESHEET} rel="stylesheet" />
       </head>
       <body className="min-h-full flex flex-col">
-        <GoogleAnalytics />
         <Suspense fallback={null}>
           <GoogleAnalyticsPageView />
         </Suspense>
