@@ -172,23 +172,15 @@ export function useCloudinaryImagePicker({
             }),
           );
 
-          setOldImages((prev) => {
-            const next = [...prev, ...uploadedImageItems];
-            onImagesChange?.([
-              ...next.map((img) => toUploadResult(img)),
-              ...images
-                .filter((img) => img.publicId)
-                .map((img) => toUploadResult(img)),
-            ]);
-            return next;
-          });
-
-          setImages((prev) =>
-            prev.filter(
-              (img) =>
-                !successfulUploads.some((s) => s.public_id === img.publicId),
-            ),
+          const nextOldImages = [...oldImages, ...uploadedImageItems];
+          const nextImages = images.filter(
+            (img) =>
+              !successfulUploads.some((s) => s.public_id === img.publicId),
           );
+
+          setOldImages(nextOldImages);
+          setImages(nextImages);
+          onImagesChange?.(collectUploadedImages(nextOldImages, nextImages));
 
           toast.success(
             `${successfulUploads.length} image(s) uploaded successfully`,

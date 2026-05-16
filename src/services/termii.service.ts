@@ -11,8 +11,7 @@ const TERMII_API_KEY = process.env.TERMII_API_KEY;
 const TERMII_WHATSAPP_FROM = process.env.TERMII_WHATSAPP_FROM ?? "2usforever";
 
 function getMomentUrl(momentId: string): string {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ?? "https://2usforever.vercel.app";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://2usforever.com";
   return `${baseUrl.replace(/\/$/, "")}/for/${momentId}`;
 }
 

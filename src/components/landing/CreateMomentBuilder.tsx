@@ -813,19 +813,19 @@ export default function CreateMomentBuilder() {
 
                 <div className="mb-3 flex flex-col gap-2.5 rounded-xl border border-[rgba(184,67,90,0.15)] bg-white px-3.5 py-3 sm:flex-row sm:items-center">
                   <Link
-                    href={`https://2usforever.vercel.app/for/${savedMoment.id}`}
+                    href={`https://2usforever.com/for/${savedMoment.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex-1 break-all text-[13px] leading-snug text-[#B8435A] hover:underline"
                   >
-                    https://2usforever.vercel.app/for/{savedMoment.id}
+                    https://2usforever.com/for/{savedMoment.id}
                   </Link>
                   <Button
                     size="sm"
                     className="h-9 w-full shrink-0 rounded-lg border-0 bg-[#B8435A] px-3.5 text-xs font-medium text-white hover:bg-[#7A1A2A] sm:w-auto"
                     onClick={() => {
                       navigator.clipboard?.writeText(
-                        `https://2usforever.vercel.app/for/${savedMoment.id}`,
+                        `https://2usforever.com/for/${savedMoment.id}`,
                       );
                       posthog.capture("moment_link_copied", {
                         moment_id: savedMoment.id,

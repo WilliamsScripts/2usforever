@@ -1,8 +1,7 @@
 import "server-only";
 
 function getAppBaseUrl(): string {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ?? "https://2usforever.vercel.app";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://2usforever.com";
   return baseUrl.replace(/\/$/, "");
 }
 

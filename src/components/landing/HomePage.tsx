@@ -54,14 +54,14 @@ export default function HomePage() {
         </div>
 
         <h1>
-          They&apos;ll open a link.
+          Someone is waiting to feel
           <br />
-          They&apos;ll feel <em>everything.</em>
+          <em>completely loved</em>
         </h1>
 
         <p>
           A personalised page with your words, your photos, and your song. Built
-          in in minutes. Remembered forever.
+          in minutes, remembered forever.
         </p>
 
         <div className="hero-actions">
@@ -80,9 +80,8 @@ export default function HomePage() {
           <div>
             <p className="section-label">How it works</p>
             <h2 className="section-title">
-              Done in <em>5 minutes.</em>
+              Create in <em>5 minutes.</em>
               <br />
-              Remembered forever.
             </h2>
 
             <div className="steps">
@@ -91,7 +90,7 @@ export default function HomePage() {
                 <div className="step-body">
                   <h4>Pick your occasion &amp; write your message</h4>
                   <p>
-                    Choose from 19 occasions. Write from scratch or let AI craft
+                    Choose an occasions and write from scratch or let AI craft
                     the perfect love letter for you in seconds.
                   </p>
                 </div>
@@ -180,11 +179,10 @@ export default function HomePage() {
         <div className="pricing-header">
           <p className="section-label">Pricing</p>
           <h2 className="section-title">
-            One price. <em>One perfect moment.</em>
+            One price, <em>One perfect moment.</em>
           </h2>
           <p className="section-sub" style={{ margin: "0 auto" }}>
-            No subscriptions. No tricks. Pay once, give someone a page
-            they&apos;ll never forget.
+            Pay once, give someone a moment they&apos;ll never forget.
           </p>
         </div>
 
@@ -226,9 +224,7 @@ export default function HomePage() {
         <div className="testimonials-header">
           <p className="section-label">Love stories</p>
           <h2 className="section-title">
-            They said yes.
-            <br />
-            They <em>cried happy tears.</em>
+            Romantic <em>moments.</em>
           </h2>
         </div>
 
@@ -296,9 +292,9 @@ export default function HomePage() {
           ))}
         </div>
         <h2>
-          Someone is waiting to feel <em>completely loved</em>
+          Put that smile on their face <em>today</em>
         </h2>
-        <p>Five minutes to build. A lifetime to remember.</p>
+        <p>It only takes five minutes.</p>
         <a
           href="/create-moment"
           className="btn-primary"

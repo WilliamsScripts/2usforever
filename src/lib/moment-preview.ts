@@ -55,7 +55,7 @@ export function buildWhatsappShareUrl(
 ): string {
   if (!recipientPhone || !/^\d{11}$/.test(recipientPhone)) return "";
   const phone = "234" + recipientPhone.slice(1);
-  const momentUrl = `https://2usforever.vercel.app/for/${momentId}`;
+  const momentUrl = `https://2usforever.com/for/${momentId}`;
   const shareText = `I created something special for you: ${momentUrl}`;
   return `https://wa.me/${phone}?text=${encodeURIComponent(shareText)}`;
 }

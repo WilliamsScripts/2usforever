@@ -44,7 +44,7 @@ export function getAppUrl() {
     return normalizeOrigin(`https://${vercelUrl}`);
   }
 
-  return "https://2usforever.vercel.app";
+  return "https://2usforever.com";
 }
 
 /** Public origin for auth redirects; avoids localhost when deployed behind a proxy. */
@@ -65,8 +65,7 @@ export function getRequestOrigin(request: {
     ?.split(",")[0]
     ?.trim();
   const forwardedProto =
-    request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() ??
-    "https";
+    request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() ?? "https";
 
   if (forwardedHost && !isLocalhostHost(forwardedHost)) {
     return `${forwardedProto}://${forwardedHost}`;
