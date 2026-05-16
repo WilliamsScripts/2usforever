@@ -6,23 +6,20 @@ import type { MomentRecord } from "@/types/moment";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const FROM_ADDRESS =
-  process.env.RESEND_FROM_EMAIL ?? "2usforever <onboarding@resend.dev>";
+  process.env.RESEND_FROM_EMAIL ?? "2usforever <noreply@love.2usforever.com>";
 
 function getMomentUrl(momentId: string): string {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ?? "https://2usforever.vercel.app";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://2usforever.com";
   return `${baseUrl.replace(/\/$/, "")}/for/${momentId}`;
 }
 
 function getTimelineUrl(): string {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ?? "https://2usforever.vercel.app";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://2usforever.com";
   return `${baseUrl.replace(/\/$/, "")}/timeline/login`;
 }
 
 function getCreateMomentUrl(): string {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ?? "https://2usforever.vercel.app";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://2usforever.com";
   return `${baseUrl.replace(/\/$/, "")}/create-moment`;
 }
 

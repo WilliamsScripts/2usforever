@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 168 28" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">2usforever</title>
+  <desc id="desc">2usforever logo  for dark backgrounds</desc>
+  <defs>
+    <clipPath id="rc-dark"><circle cx="17" cy="15" r="7"/></clipPath>
+  </defs>
+  <g aria-hidden="true">
+    <circle cx="11" cy="15" r="7" fill="none" stroke="#E8A0B0" stroke-width="1.8"/>
+    <circle cx="17" cy="15" r="7" fill="none" stroke="#E8C882" stroke-width="1.8"/>
+    <circle cx="11" cy="15" r="7" fill="#E8A0B0" opacity="0.12" clip-path="url(#rc-dark)"/>
+    <path d="M14 10.5 C14 10.5 11.2 7.8 9.2 9.2 C7.2 10.6 7.2 13.4 9.2 15L14 19.5L18.8 15 C20.8 13.4 20.8 10.6 18.8 9.2 C16.8 7.8 14 10.5 14 10.5Z" fill="#E8A0B0" opacity="0.9"/>
+  </g>
+  <text x="36" y="14" dominant-baseline="central" font-family="'Cormorant Garamond', Georgia, serif" font-size="22" letter-spacing="0.3">
+    <tspan font-style="italic" fill="#E8A0B0">2us</tspan><tspan font-weight="300" fill="rgba(255,255,255,0.7)">forever</tspan>
+  </text>
+</svg>
