@@ -29,7 +29,7 @@ const OCCASIONS = [
 export default function HomePage() {
   useStepReveal();
   const isNigeria = useIsNigeria();
-  const price = isNigeria ? "₦5,000" : "$5";
+  const price = isNigeria ? "₦6,990" : "$6.99";
 
   return (
     <LandingFrame ctaHref="/create-moment">
