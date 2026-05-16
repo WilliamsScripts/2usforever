@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { StatusScreen } from "@/components/status/StatusScreen";
 import MomentDisplay from "./MomentDisplay";
 import { getMoment } from "@/services/moments.service";
 import { SITE_NAME, createPageMetadata } from "@/lib/seo";
@@ -101,35 +102,16 @@ export default async function MomentPage({
   }
 
   if (!data) {
-    return (
-      <div
-        className="flex items-center justify-center min-h-screen text-rose-300/60 text-sm tracking-widest uppercase"
-        style={{
-          background:
-            "radial-gradient(ellipse at 50% 0%, #3d0a1e 0%, #0e0412 60%, #060108 100%)",
-        }}
-      >
-        moment not found
-      </div>
-    );
+    return <StatusScreen variant="moment-not-found" />;
   }
 
   if (data.status !== "active" || data.payment_status !== "paid") {
     return (
-      <div
-        className="flex flex-col items-center justify-center min-h-screen px-6 text-center text-rose-200/70 text-sm tracking-wide"
-        style={{
-          background:
-            "radial-gradient(ellipse at 50% 0%, #3d0a1e 0%, #0e0412 60%, #060108 100%)",
-        }}
-      >
-        <p className="mb-2 text-xs uppercase tracking-[0.2em] text-rose-300/50">
-          Not available yet
-        </p>
-        <p className="max-w-sm text-base leading-relaxed text-rose-100/80">
-          This moment is waiting on payment before it can be opened.
-        </p>
-      </div>
+      <StatusScreen
+        variant="moment-awaiting"
+        recipientName={data.recipient}
+        occasion={data.occasion}
+      />
     );
   }
 
