@@ -1,4 +1,7 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
+import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
+import { GoogleAnalyticsPageView } from "@/components/analytics/GoogleAnalyticsPageView";
 import QueryProvider from "@/components/providers/QueryProvider";
 import { AuthProvider } from "@/context/AuthProvider";
 import { defaultMetadata } from "@/lib/seo";
@@ -33,6 +36,10 @@ export default function RootLayout({
         <link href={GOOGLE_FONTS_STYLESHEET} rel="stylesheet" />
       </head>
       <body className="min-h-full flex flex-col">
+        <GoogleAnalytics />
+        <Suspense fallback={null}>
+          <GoogleAnalyticsPageView />
+        </Suspense>
         <QueryProvider>
           <AuthProvider>
             {children}
