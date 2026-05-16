@@ -89,30 +89,30 @@ export default function HomePage() {
                 <div className="step-num">1</div>
                 <div className="step-body">
                   <h4>Pick your occasion &amp; write your message</h4>
-                  <p>
+                  {/* <p>
                     Choose an occasions and write from scratch or let AI craft
                     the perfect love letter for you in seconds.
-                  </p>
+                  </p> */}
                 </div>
               </div>
               <div className="step">
                 <div className="step-num">2</div>
                 <div className="step-body">
                   <h4>Add photos &amp; your song</h4>
-                  <p>
+                  {/* <p>
                     Upload up to 5 photos as polaroid frames. Search any Spotify
                     track and it plays the moment they open the page.
-                  </p>
+                  </p> */}
                 </div>
               </div>
               <div className="step">
                 <div className="step-num">3</div>
                 <div className="step-body">
                   <h4>Share &amp; watch them react</h4>
-                  <p>
+                  {/* <p>
                     Send the private link via WhatsApp or copy it anywhere. The
                     page lives forever.
-                  </p>
+                  </p> */}
                 </div>
               </div>
             </div>
